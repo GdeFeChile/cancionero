@@ -39,7 +39,9 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);height:10
 .search-wrap input{width:100%;padding:8px 10px 8px 32px;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:var(--rs);font-family:var(--ff-body);font-size:.82rem;outline:none;transition:border-color .2s}
 .search-wrap input::placeholder{color:var(--muted)}
 .search-wrap input:focus{border-color:rgba(200,246,90,.3)}
-.sb-body{display:flex;flex:1;overflow:hidden}
+.sb-body{display:flex;overflow:hidden;min-height:0}
+.sb-body-wrap{display:grid;grid-template-rows:1fr auto;flex:1;overflow:hidden;min-height:0}
+.sec-panel{overflow-y:auto;border-top:2px solid var(--border2);max-height:45vh}
 .alpha-col{width:28px;background:var(--bg);border-right:1px solid var(--border);overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;scrollbar-width:none}
 .alpha-col::-webkit-scrollbar{display:none}
 .ab{width:100%;min-height:24px;border:none;background:transparent;color:var(--muted);font-size:.58rem;font-weight:700;font-family:var(--ff-body);letter-spacing:.04em;cursor:pointer;transition:all .12s;-webkit-tap-highlight-color:transparent;position:relative;display:flex;align-items:center;justify-content:center}
@@ -48,7 +50,12 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);height:10
 .ab.active{color:var(--accent)}
 .ab.active::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:2px;background:var(--accent);border-radius:0 2px 2px 0}
 .ab:hover.has:not(.active){color:var(--text)}
-.song-col{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.alpha-sec-sep{width:100%;height:1px;background:var(--border2);margin:4px 0;flex-shrink:0}
+.ab-sec{width:100%;min-height:26px;border:none;background:transparent;color:var(--sec-color);font-size:.55rem;font-weight:700;font-family:var(--ff-body);cursor:pointer;transition:all .12s;-webkit-tap-highlight-color:transparent;position:relative;display:flex;align-items:center;justify-content:center}
+.ab-sec.active{color:var(--accent)}
+.ab-sec.active::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:2px;background:var(--accent);border-radius:0 2px 2px 0}
+.ab-sec:hover:not(.active){color:var(--text)}
+.song-col{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 .col-head{padding:7px 12px;font-size:.62rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
 .col-count{background:var(--panel);border-radius:4px;padding:1px 6px;font-size:.6rem;color:var(--muted)}
 .song-list{flex:1;overflow-y:auto}
@@ -171,7 +178,7 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);height:10
 
 /* MOBILE */
 /* SECTION ACCORDION */
-.sec-panel{border-top:1px solid var(--border);flex-shrink:0;overflow-y:auto;max-height:45%}
+
 .sec-panel::-webkit-scrollbar{width:3px}
 .sec-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 .sec-header{
@@ -258,18 +265,20 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);height:10
     </div>
   </div>
 
-  <div class="sb-body">
-    <div class="alpha-col" id="alphaTabs"></div>
-    <div class="song-col">
-      <div class="col-head">
-        <span id="colHead">Todas</span>
-        <span class="col-count" id="colCount">0</span>
+  <div class="sb-body-wrap">
+    <div class="sb-body">
+      <div class="alpha-col" id="alphaTabs"></div>
+      <div class="song-col">
+        <div class="col-head">
+          <span id="colHead">Todas</span>
+          <span class="col-count" id="colCount">0</span>
+        </div>
+        <div class="song-list" id="songList"></div>
       </div>
-      <div class="song-list" id="songList"></div>
     </div>
-  </div>
 
-  <div class="sec-panel" id="secPanel"></div>
+    <div class="sec-panel" id="secPanel"></div>
+  </div>
 
   <div class="sb-foot">
     <button class="fb fb-add" onclick="openAddModal()">+ Agregar canción</button>
@@ -535,66 +544,78 @@ function renderAlpha(){
     const has=used.has(l);
     h+=`<button class="ab ${has?'has':''} ${activeAlpha===l?'active':''}" ${has?`onclick="setAlpha('${l}')"`:'disabled'}>${l}</button>`;
   });
+  // Section buttons below Z
+  const secs=sections.filter(sec=>songs.some(s=>s.section===sec));
+  if(secs.length){
+    h+=`<div class="alpha-sec-sep"></div>`;
+    const abbr={'Cuecas':'CQ','Canciones en inglés':'EN','Villancicos Hospitales':'VH','Villancicos 2021':'V21','Concierto de Navidad':'CN','Regalo de Gracia 2021':'RG'};
+    secs.forEach(sec=>{
+      const short=abbr[sec]||(sec.substring(0,2).toUpperCase());
+      h+=`<button class="ab-sec ${activeAlpha===sec?'active':''}" onclick="setAlpha('${sec.replace(/'/g,"\\'")}') " title="${sec}">${short}</button>`;
+    });
+  }
   c.innerHTML=h;
 }
 function setAlpha(l){
   activeAlpha=l;renderAlpha();renderSongs();
-  document.getElementById('colHead').textContent=l==='ALL'?'Todas':`"${l}"`;
+  const isSec=sections.includes(l);
+  document.getElementById('colHead').textContent=l==='ALL'?'Todas':isSec?l:`"${l}"`;
 }
 
 /* SONGS */
+function songItem(s){
+  return `<div class="si ${currentId===s.id?'active':''}" onclick="selectSong(${s.id})" oncontextmenu="showCtx(event,${s.id})">
+    <div style="overflow:hidden">
+      <div class="si-title">${s.title}${s.gender?` <span style="font-size:.6rem;font-weight:400;color:var(--muted)">(${s.gender})</span>`:''}</div>
+      <div class="si-meta">${s.author||''}</div>
+    </div>
+    <span class="si-key">${s.key}</span>
+  </div>`;
+}
 function renderSongs(){
   const q=document.getElementById('searchInput').value.toLowerCase();
+  const isSec=sections.includes(activeAlpha);
   let f=songs.filter(s=>{
-    if(s.section) return false; // sectioned songs go in accordion
+    if(isSec) return s.section===activeAlpha&&(s.title.toLowerCase().includes(q)||(s.author||'').toLowerCase().includes(q));
+    if(s.section) return false;
     const ms=s.title.toLowerCase().includes(q)||(s.author||'').toLowerCase().includes(q);
     const ma=activeAlpha==='ALL'||s.title[0].toUpperCase()===activeAlpha;
     return ms&&ma;
   }).sort((a,b)=>a.title.localeCompare(b.title));
   document.getElementById('colCount').textContent=f.length;
-  if(!f.length){document.getElementById('songList').innerHTML=`<div style="padding:28px 12px;color:var(--muted);font-size:.78rem;text-align:center">Sin resultados</div>`;return;}
-  document.getElementById('songList').innerHTML=f.map(s=>`
-    <div class="si ${currentId===s.id?'active':''}" onclick="selectSong(${s.id})" oncontextmenu="showCtx(event,${s.id})">
-      <div style="overflow:hidden">
-        <div class="si-title">${s.title}${s.gender?` <span style="font-size:.6rem;font-weight:400;color:var(--muted)">(${s.gender})</span>`:''}</div>
-        <div class="si-meta">${s.author||''}</div>
-      </div>
-      <span class="si-key">${s.key}</span>
-    </div>`).join('');
+  document.getElementById('songList').innerHTML=f.length
+    ? f.map(songItem).join('')
+    : `<div style="padding:28px 12px;color:var(--muted);font-size:.78rem;text-align:center">Sin resultados</div>`;
   renderSections(q);
 }
+// track which sections are open
+const openSecs=new Set();
 function renderSections(q=''){
   const panel=document.getElementById('secPanel');
   const secs=sections.filter(sec=>songs.some(s=>s.section===sec));
   if(!secs.length){panel.innerHTML='';return;}
   panel.innerHTML=secs.map(sec=>{
     const secSongs=songs.filter(s=>s.section===sec&&(
-      s.title.toLowerCase().includes(q)||(s.author||'').toLowerCase().includes(q)
+      !q||s.title.toLowerCase().includes(q)||(s.author||'').toLowerCase().includes(q)
     )).sort((a,b)=>a.title.localeCompare(b.title));
     if(!secSongs.length) return '';
-    const isOpen=panel.querySelector(`.sec-group[data-sec="${CSS.escape(sec)}"]`)?.classList.contains('open');
-    return `<div class="sec-group ${isOpen?'open':''}" data-sec="${sec}">
-      <div class="sec-header" onclick="toggleSec(this)">
+    const open=openSecs.has(sec);
+    return `<div class="sec-group${open?' open':''}" data-sec="${sec}">
+      <div class="sec-header" onclick="toggleSec('${sec.replace(/'/g,"\\'")}')">
         <span class="sec-header-label">${sec}</span>
         <span class="sec-header-right">
           <span class="sec-header-count">${secSongs.length}</span>
           <span class="sec-chevron">▶</span>
         </span>
       </div>
-      <div class="sec-songs">${secSongs.map(s=>`
-        <div class="si ${currentId===s.id?'active':''}" onclick="selectSong(${s.id})" oncontextmenu="showCtx(event,${s.id})">
-          <div style="overflow:hidden">
-            <div class="si-title">${s.title}${s.gender?` <span style="font-size:.6rem;font-weight:400;color:var(--muted)">(${s.gender})</span>`:''}</div>
-            <div class="si-meta">${s.author||''}</div>
-          </div>
-          <span class="si-key">${s.key}</span>
-        </div>`).join('')}
-      </div>
+      <div class="sec-songs">${secSongs.map(songItem).join('')}</div>
     </div>`;
   }).join('');
 }
-function toggleSec(header){
-  header.closest('.sec-group').classList.toggle('open');
+function toggleSec(sec){
+  if(openSecs.has(sec)) openSecs.delete(sec);
+  else openSecs.add(sec);
+  renderSections(document.getElementById('searchInput').value.toLowerCase());
 }
 
 function filterSongs(){renderSongs()}
