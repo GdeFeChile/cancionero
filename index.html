@@ -41,8 +41,8 @@
 
         /* ===== SIDEBAR ===== */
         .sidebar {
-            width: 320px;
-            min-width: 320px;
+            width: 380px;
+            min-width: 380px;
             background: var(--bg-secondary);
             border-right: 1px solid var(--border-color);
             display: flex;
@@ -51,13 +51,21 @@
         }
 
         .sidebar-header {
-            padding: 15px;
+            padding: 12px 15px;
             background: var(--bg-tertiary);
             border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .sidebar-header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
         }
 
         .sidebar-header h2 {
-            font-size: 1.3em;
+            font-size: 1.1em;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -65,223 +73,204 @@
 
         .sidebar-tools {
             display: flex;
-            gap: 8px;
-            margin-top: 10px;
+            gap: 6px;
         }
 
         .sidebar-tools button {
             flex: 1;
-            padding: 8px;
+            padding: 7px 8px;
             border: 1px solid var(--border-color);
             background: var(--bg-primary);
             color: var(--text-primary);
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.85em;
+            font-size: 0.8em;
             transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .sidebar-tools button:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-        }
-
+        .sidebar-tools button:hover,
         .sidebar-tools button.active {
             background: var(--accent);
             border-color: var(--accent);
         }
 
+        /* Search */
         .search-box {
-            padding: 10px 15px;
+            padding: 8px 10px;
             border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
         }
 
         .search-box input {
             width: 100%;
-            padding: 10px 15px;
+            padding: 8px 14px;
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             border-radius: 20px;
-            font-size: 0.9em;
+            font-size: 0.88em;
             outline: none;
         }
 
-        .search-box input:focus {
-            border-color: var(--accent);
+        .search-box input:focus { border-color: var(--accent); }
+
+        /* ===== TWO-PANEL SIDEBAR BODY ===== */
+        .sidebar-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
         }
 
-        /* Tabs alfabéticas */
-        .alpha-tabs {
-            display: flex;
-            flex-wrap: wrap;
-            padding: 8px;
-            gap: 2px;
-            border-bottom: 1px solid var(--border-color);
+        /* LEFT: alphabet column */
+        .alpha-col {
+            width: 60px;
+            min-width: 60px;
             background: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            scrollbar-width: none;
         }
+        .alpha-col::-webkit-scrollbar { display: none; }
 
         .alpha-tab {
-            width: 28px;
-            height: 28px;
+            width: 100%;
+            height: 36px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.75em;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-
-        .alpha-tab:hover {
-            background: var(--accent);
-            color: white;
-        }
-
-        .alpha-tab.active {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
-
-        .alpha-tab.has-songs {
-            color: var(--text-primary);
-            border-color: var(--accent);
-        }
-
-        /* Sections / Categorías */
-        .sections-container {
-            padding: 8px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .sections-container label {
-            font-size: 0.8em;
-            color: var(--text-secondary);
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .section-tabs {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-
-        .section-tab {
-            padding: 4px 10px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 0.75em;
-            transition: all 0.2s;
-        }
-
-        .section-tab:hover, .section-tab.active {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
-
-        .add-section-btn {
-            padding: 4px 10px;
+            justify-content: flex-start;
+            padding: 0 0 0 8px;
+            gap: 5px;
             background: transparent;
-            border: 1px dashed var(--border-color);
+            border: none;
+            border-bottom: 1px solid var(--border-color);
             color: var(--text-secondary);
-            border-radius: 12px;
             cursor: pointer;
-            font-size: 0.75em;
+            font-size: 0.85em;
+            font-weight: 700;
+            transition: background 0.15s;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .add-section-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
+        .alpha-tab .alpha-dot {
+            width: 5px;
+            height: 20px;
+            border-radius: 3px;
+            flex-shrink: 0;
+            opacity: 0;
+        }
+
+        .alpha-tab:hover { background: var(--bg-secondary); color: var(--text-primary); }
+        .alpha-tab.active { background: var(--bg-tertiary); color: white; border-left: 3px solid var(--accent); padding-left: 5px; }
+        .alpha-tab.has-songs .alpha-dot { opacity: 1; }
+        .alpha-tab:not(.has-songs) { opacity: 0.35; cursor: default; }
+
+        /* RIGHT: song list column */
+        .song-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .song-col-header {
+            padding: 7px 12px;
+            font-size: 0.68em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            flex-shrink: 0;
         }
 
         /* Lista de canciones */
         .song-list {
             flex: 1;
             overflow-y: auto;
-            padding: 5px;
         }
 
-        .song-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .song-list::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-        }
-
-        .song-list::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 3px;
-        }
+        .song-list::-webkit-scrollbar { width: 4px; }
+        .song-list::-webkit-scrollbar-track { background: transparent; }
+        .song-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
 
         .song-item {
-            padding: 10px 15px;
+            padding: 9px 12px;
             cursor: pointer;
-            border-radius: 8px;
-            margin-bottom: 2px;
-            transition: all 0.2s;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.15s;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .song-item:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .song-item.active {
-            background: var(--accent);
-        }
+        .song-item:hover { background: var(--bg-tertiary); }
+        .song-item.active { background: rgba(233,69,96,0.15); border-left: 3px solid var(--accent); padding-left: 9px; }
 
         .song-item .song-title {
-            font-size: 0.9em;
+            font-size: 0.85em;
             font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 175px;
         }
 
         .song-item .song-key {
-            font-size: 0.75em;
+            font-size: 0.72em;
             color: var(--chord-color);
-            background: rgba(0,210,255,0.15);
-            padding: 2px 8px;
-            border-radius: 10px;
+            background: rgba(0,210,255,0.12);
+            padding: 2px 7px;
+            border-radius: 8px;
+            flex-shrink: 0;
         }
 
         .song-item.active .song-key {
-            background: rgba(255,255,255,0.2);
-            color: white;
+            background: rgba(233,69,96,0.25);
+            color: var(--accent-hover);
         }
 
         .song-item .song-section-badge {
             font-size: 0.65em;
             color: var(--text-secondary);
-            margin-top: 2px;
+            margin-top: 1px;
+        }
+
+        /* Bottom footer */
+        .sidebar-footer {
+            display: flex;
+            border-top: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer button {
+            flex: 1;
+            padding: 11px 8px;
+            border: none;
+            font-size: 0.82em;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .add-song-btn {
-            width: 100%;
-            padding: 12px;
             background: var(--accent);
-            border: none;
             color: white;
-            font-size: 0.95em;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
+            border-right: 1px solid var(--border-color) !important;
         }
+        .add-song-btn:hover { background: var(--accent-hover); }
 
-        .add-song-btn:hover {
-            background: var(--accent-hover);
+        .add-section-btn-footer {
+            background: var(--bg-primary);
+            color: var(--accent);
         }
+        .add-section-btn-footer:hover { background: var(--bg-tertiary); }
 
         /* ===== MAIN CONTENT ===== */
         .main-content {
@@ -1173,22 +1162,23 @@
             <input type="text" id="searchInput" placeholder="🔍 Buscar canción..." oninput="filterSongs()">
         </div>
 
-        <!-- Tabs alfabéticas -->
-        <div class="alpha-tabs" id="alphaTabs"></div>
+        <!-- Two-panel body: alphabet + song list -->
+        <div class="sidebar-body">
+            <!-- Left: alphabet tabs -->
+            <div class="alpha-col" id="alphaTabs"></div>
 
-        <!-- Secciones -->
-        <div class="sections-container">
-            <label>Secciones</label>
-            <div class="section-tabs" id="sectionTabs">
-                <span class="section-tab active" onclick="filterBySection('all')">Todas</span>
+            <!-- Right: song list -->
+            <div class="song-col">
+                <div class="song-col-header" id="songColHeader">Todas las canciones</div>
+                <div class="song-list" id="songList"></div>
             </div>
         </div>
 
-        <!-- Lista de canciones -->
-        <div class="song-list" id="songList"></div>
-
-        <!-- Botón añadir -->
-        <button class="add-song-btn" onclick="openAddModal()">+ Agregar Canción</button>
+        <!-- Footer buttons -->
+        <div class="sidebar-footer">
+            <button class="add-song-btn" onclick="openAddModal()">+ Agregar canción</button>
+            <button class="add-section-btn-footer" onclick="openSectionModal()">+ Sección</button>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -1555,18 +1545,30 @@ Fiel eres tú`
     // ========== ALPHA TABS ==========
     let activeAlpha = 'ALL';
 
+    const ALPHA_COLORS = [
+        '#e94560','#e9694a','#e9a84a','#4ae9a8','#4ac8e9',
+        '#4a7ee9','#9b4ae9','#e94ab5','#e94560','#4ae960',
+        '#e9d44a','#4ae9e9','#e94a7e','#7ee94a','#4a4ae9',
+        '#e9904a','#4ae97e','#c8e94a','#e94ac8','#4ab5e9',
+        '#90e94a','#e9604a','#4ae9c8','#e9b54a','#604ae9','#e94a90'
+    ];
+
     function renderAlphaTabs() {
         const container = document.getElementById('alphaTabs');
         const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-
-        // Letras que tienen canciones
         const usedLetters = new Set(songs.map(s => s.title.charAt(0).toUpperCase()));
 
-        let html = `<span class="alpha-tab ${activeAlpha === 'ALL' ? 'active' : ''}" onclick="setAlphaFilter('ALL')">⊛</span>`;
-        letters.forEach(l => {
+        let html = `<button class="alpha-tab has-songs ${activeAlpha === 'ALL' ? 'active' : ''}" onclick="setAlphaFilter('ALL')">
+            <span class="alpha-dot" style="background:#e94560"></span> #
+        </button>`;
+
+        letters.forEach((l, i) => {
             const hasSongs = usedLetters.has(l);
-            html += `<span class="alpha-tab ${activeAlpha === l ? 'active' : ''} ${hasSongs ? 'has-songs' : ''}" 
-                      onclick="setAlphaFilter('${l}')">${l}</span>`;
+            const color = ALPHA_COLORS[i % ALPHA_COLORS.length];
+            html += `<button class="alpha-tab ${hasSongs ? 'has-songs' : ''} ${activeAlpha === l ? 'active' : ''}" 
+                ${hasSongs ? `onclick="setAlphaFilter('${l}')"` : 'disabled'}>
+                <span class="alpha-dot" style="background:${color}"></span>${l}
+            </button>`;
         });
         container.innerHTML = html;
     }
@@ -1575,6 +1577,8 @@ Fiel eres tú`
         activeAlpha = letter;
         renderAlphaTabs();
         renderSongList();
+        const header = document.getElementById('songColHeader');
+        if (header) header.textContent = letter === 'ALL' ? 'Todas las canciones' : `Canciones con "${letter}"`;
     }
 
     // ========== SECTIONS ==========
