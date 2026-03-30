@@ -12,7 +12,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -21,10 +21,64 @@
   --accent:#c8f65a;--text:#f0efea;--muted:#6b6b72;
   --chord:#85e0c8;--sec-color:#c8a96e;
   --rs:8px;
-  --ff-head:'DM Serif Display',Georgia,serif;
-  --ff-body:'DM Sans',sans-serif;
-  --ff-mono:'DM Mono',monospace;
+  --ff-head:'Inter',system-ui,sans-serif;
+  --ff-body:'Inter',system-ui,sans-serif;
+  --ff-mono:'JetBrains Mono',monospace;
 }
+[data-theme="light"]{
+  --bg:#f5f5f0;--surface:#ffffff;--panel:#efefea;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --accent:#5a9e1a;--text:#1a1a1e;--muted:#8a8a94;
+  --chord:#1a7a64;--sec-color:#9a6010;
+}
+[data-theme="light"] .main,
+[data-theme="light"] .song-body,
+[data-theme="light"] .song-hdr,
+[data-theme="light"] .welcome{
+  background:var(--bg);color:var(--text);
+}
+[data-theme="light"] .song-hdr{
+  background:var(--surface);border-color:var(--border);
+}
+[data-theme="light"] .lyric-line,
+[data-theme="light"] .inline-lyric{color:var(--text)}
+[data-theme="light"] .chord-line,
+[data-theme="light"] .inline-chords{color:var(--chord)}
+[data-theme="light"] .section-label{color:var(--sec-color)}
+[data-theme="light"] .scroll-bar{background:var(--surface);border-color:var(--border)}
+[data-theme="light"] .sidebar{background:var(--surface);border-color:var(--border)}
+[data-theme="light"] .alpha-col{background:var(--panel)}
+[data-theme="light"] .song-list{background:var(--surface)}
+[data-theme="light"] .si{border-color:var(--border)}
+[data-theme="light"] .si:hover{background:var(--panel)}
+[data-theme="light"] .col-head{border-color:var(--border);color:var(--muted)}
+[data-theme="light"] .sb-search,.sb-head{border-color:var(--border)}
+[data-theme="light"] .search-wrap input{background:var(--panel);color:var(--text);border-color:var(--border)}
+[data-theme="light"] .ab[data-l="#"]{background:var(--panel);color:var(--muted)}
+[data-theme="light"] .ab[data-l="#"].active{background:var(--accent);color:#fff}
+[data-theme="light"] .vp:not(.active){color:var(--muted)}
+[data-theme="light"] .vpills{background:var(--panel)}
+[data-theme="light"] .modal{background:var(--surface);border-color:var(--border2)}
+[data-theme="light"] .fg input,[data-theme="light"] .fg select,[data-theme="light"] .fg textarea{
+  background:var(--panel);border-color:var(--border);color:var(--text)
+}
+[data-theme="light"] .ctx{background:var(--surface);border-color:var(--border2)}
+[data-theme="light"] .ctx-item{color:var(--text)}
+[data-theme="light"] .ctx-item:hover{background:var(--panel)}
+[data-theme="light"] .toast,[data-theme="light"] .sync-bar,[data-theme="light"] .install-bar{
+  background:var(--surface);border-color:var(--border2);color:var(--text)
+}
+[data-theme="light"] .hdr-act{color:var(--muted);border-color:var(--border)}
+[data-theme="light"] .hdr-act:hover{color:var(--text)}
+[data-theme="light"] .ib{color:var(--muted);border-color:var(--border)}
+[data-theme="light"] .ib:hover{color:var(--text)}
+[data-theme="light"] .tr-btn{color:var(--text);border-color:var(--border2)}
+[data-theme="light"] .transpose{background:var(--panel);border-color:var(--border)}
+[data-theme="light"] .key-disp{color:var(--chord)}
+[data-theme="light"] .ab-sec{background:var(--panel);border-color:var(--border2);color:var(--sec-color)}
+[data-theme="light"] .sb-foot{border-color:var(--border)}
+[data-theme="light"] .fb-sec{color:var(--muted)}
+[data-theme="light"] .scroll-tog{color:var(--muted);border-color:var(--border)}
 body{font-family:var(--ff-body);background:var(--bg);color:var(--text);height:100vh;overflow:hidden;font-size:14px;-webkit-font-smoothing:antialiased}
 .app{display:flex;height:100vh}
 
@@ -48,7 +102,7 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);height:10
 .brand{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .brand-logo{width:32px;height:32px;background:linear-gradient(135deg,#c8f65a,#85e0c8);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
 .brand-logo-img{width:32px;height:32px;object-fit:contain;flex-shrink:0;border-radius:4px}
-.brand-name{font-family:var(--ff-head);font-size:1.05rem;letter-spacing:-.01em;font-style:italic}
+.brand-name{font-family:var(--ff-head);font-size:1.05rem;font-weight:700;letter-spacing:-.03em}
 .brand-sub{font-size:.65rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
 .vpills{display:flex;background:var(--panel);border-radius:8px;padding:3px;gap:2px}
 .vp{flex:1;padding:7px 0;border:none;background:transparent;color:var(--muted);border-radius:6px;cursor:pointer;font-family:var(--ff-body);font-size:.73rem;font-weight:500;transition:all .18s}
@@ -168,12 +222,12 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);height:10
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted)}
 .welcome-icon{font-size:2.5rem;opacity:.2}
-.welcome h2{font-family:var(--ff-head);font-size:1.3rem;color:var(--text);opacity:.4;font-style:italic}
+.welcome h2{font-family:var(--ff-head);font-size:1.3rem;color:var(--text);opacity:.4;font-weight:600;letter-spacing:-.02em}
 .welcome p{font-size:.78rem;opacity:.4}
 
 #songView{display:none;flex-direction:column;flex:1;overflow:hidden}
 .song-hdr{padding:16px 32px 12px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-shrink:0}
-.song-hdr-l h1{font-family:var(--ff-head);font-size:1.4rem;font-style:italic;letter-spacing:-.02em;line-height:1.1}
+.song-hdr-l h1{font-family:var(--ff-head);font-size:1.3rem;font-weight:700;letter-spacing:-.03em;line-height:1.2}
 .song-meta{font-size:.68rem;color:var(--muted);margin-top:3px}
 .song-hdr-r{display:flex;align-items:center;gap:7px;flex-wrap:wrap;flex-shrink:0}
 .transpose{display:flex;align-items:center;gap:5px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:4px 10px}
@@ -188,20 +242,20 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);height:10
 .hdr-act{padding:6px 12px;border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:var(--rs);cursor:pointer;font-size:.73rem;font-family:var(--ff-body);font-weight:500;transition:all .15s}
 .hdr-act:hover{border-color:var(--border2);color:var(--text)}
 
-.song-body{flex:1;overflow-y:auto;padding:28px 40px;line-height:1.5}
+.song-body{flex:1;overflow-y:auto;padding:28px 40px;line-height:1.7}
 .song-body::-webkit-scrollbar{width:4px}
 .song-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-.song-line{font-family:var(--ff-mono);font-size:1em;white-space:pre-wrap;word-break:break-word}
-.chord-line{color:var(--chord);font-weight:500;user-select:none}
-.lyric-line{color:var(--text);font-weight:300}
+.song-line{font-family:var(--ff-body);font-size:1em;white-space:pre-wrap;word-break:break-word}
+.chord-line{font-family:var(--ff-mono);color:var(--chord);font-weight:600;user-select:none;letter-spacing:.03em}
+.lyric-line{color:var(--text);font-weight:400}
 /* Inline chords: lyric left, chords as right column */
-.inline-line{display:flex;justify-content:space-between;align-items:baseline;gap:24px;font-family:var(--ff-mono);font-size:1em;padding:1px 0}
-.inline-lyric{color:var(--text);font-weight:300;flex:1;min-width:0}
-.inline-chords{color:var(--chord);font-weight:600;font-size:.85em;letter-spacing:.05em;white-space:nowrap;flex-shrink:0;text-align:right;min-width:90px;opacity:.9}
+.inline-line{display:flex;justify-content:flex-start;align-items:baseline;gap:8px;font-family:var(--ff-body);font-size:1em;padding:1px 0}
+.inline-lyric{color:var(--text);font-weight:400;flex:0 1 auto;min-width:0}
+.inline-chords{font-family:var(--ff-mono);color:var(--chord);font-weight:600;font-size:.85em;letter-spacing:.05em;white-space:nowrap;flex-shrink:0;text-align:left;min-width:0;opacity:.9}
 /* Hide chords mode */
 .hide-chords .chord-line{display:none}
 .hide-chords .inline-chords{visibility:hidden}
-.section-label{display:inline-block;font-family:var(--ff-body);font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--sec-color);margin-top:20px;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid rgba(200,169,110,.2)}
+.section-label{display:inline-block;font-family:var(--ff-body);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text);margin-top:22px;margin-bottom:8px;padding-bottom:0}
 .empty-line{height:11px}
 .song-body.two-col{column-count:2;column-gap:48px}
 
@@ -215,7 +269,7 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);height:10
 /* ── TUNER ── */
 .tuner-view{display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:40px}
 .tuner-view.active{display:flex}
-.tuner-note{font-family:var(--ff-head);font-size:6.5rem;color:var(--chord);line-height:1;font-style:italic;text-align:center}
+.tuner-note{font-family:var(--ff-head);font-size:6.5rem;color:var(--chord);line-height:1;font-weight:700;letter-spacing:-.05em;text-align:center}
 .tuner-freq{font-family:var(--ff-mono);font-size:.82rem;color:var(--muted);text-align:center}
 .tuner-meter{width:340px;max-width:90vw;height:3px;background:var(--panel);border-radius:2px;position:relative}
 .tm-line{position:absolute;left:50%;top:-5px;bottom:-5px;width:1px;background:rgba(200,246,90,.35)}
@@ -239,7 +293,7 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);height:10
 .modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;width:660px;max-width:95vw;max-height:90vh;overflow-y:auto;animation:mIn .22s cubic-bezier(.34,1.56,.64,1)}
 @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(6px)}to{opacity:1;transform:none}}
 .modal-head{padding:20px 22px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.modal-head h3{font-family:var(--ff-head);font-size:1.1rem;font-style:italic}
+.modal-head h3{font-family:var(--ff-head);font-size:1.1rem;font-weight:700;letter-spacing:-.02em}
 .modal-close{width:28px;height:28px;border:none;background:var(--panel);color:var(--muted);border-radius:6px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .modal-close:hover{color:var(--text)}
 .modal-body{padding:20px 22px}
@@ -293,10 +347,20 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);height:10
 @media print{
   .sidebar,.song-hdr,.scroll-bar,.mob-btn{display:none!important}
   .song-body{padding:16px!important}
-  body{background:#fff;color:#000}
-  .chord-line{color:#007a60}
+  body{background:#fff!important;color:#000!important}
+  .chord-line{color:#007a60!important}
 }
 
+
+/* Theme toggle */
+.theme-btn{
+  position:absolute;top:20px;right:48px;
+  width:28px;height:28px;border:none;background:transparent;
+  font-size:.9rem;cursor:pointer;opacity:.5;
+  transition:opacity .2s;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+}
+.theme-btn:hover{opacity:1;background:var(--panel)}
 /* ── SYNC TOAST ── */
 .sync-bar{
   position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
@@ -365,6 +429,7 @@ body{font-family:var(--ff-body);background:var(--bg);color:var(--text);height:10
       <button class="vp" id="vp2" onclick="showView('tuner')">🎸 Afinador</button>
     </div>
   </div>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
     <button class="sync-btn" id="syncBtn" onclick="syncNow()" title="Sincronizar canciones">
       <span id="syncIcon">☁️</span>
     </button>
@@ -769,6 +834,8 @@ function loadData(){
   {id:4004,title:"Mi vida eres tu G",key:"G",author:"",section:"",gender:"",content:"MI VIDA ERES TÚ\nEres el gran yo soy\nEres hijo de Dios\nEres el centro de mi vida, Cristo\nEres Cordero fiel\nEres Majestuoso Rey\nEres el centro de mi vida, Cristo\nEl amante de mi ser a quien adorare\nMi vida eres tú, mi vida eres tú\nMi vida eres tú, Jesús\nEres mi salvador\nEres mi buen pastor\nEres el centro de mi vida, Cristo.\nEres Poderoso\nEres HERMOSO DIOS\nEres el centro de mi vida, Cristo\nEl amante de mi ser a quien adorare\nNo hay nadie más, no hay nadie\nNo hay nadie más\nNadie más como tú\nLa la la, la la la la la la\nMi vida eres tú, mi vida eres tú\nMi vida eres tú, Jesús\nM\nG D C D\nG D C D\nG D C Am G/B C\nG D C D\nG D C D\nG D C Am G/B C\nD Em F\nG D C G D C\nEm D C D G\nmás Gm F C\nG C\nG D C G D C\nEm D C D G\npágina 106"},
   {id:4005,title:"Santo por siempre en",key:"A",author:"",section:"",gender:"hombre",content:"INTRO: A D F#m E, A/C# F#m E A\nVERSO1\nMil generaciones, Se postran a adorarle. A D A\nLe cantan al cordero que venció. F#m E D\nLos que nos precedieron, Y los que en El creerán. A D A\nLe cantarán a aquel que ya venció. F#m E D\nPre-CORO\nTu nombre es mas alto, Tu nombre es mas grande. D F#m E\nTu nombre, sobre todo es, F#m7 E D\nSean tronos, dominios. D F#m\nPoderes, potestades, Tu nombre, sobre todo es. E F#m E Bm7\nCORO\nClaman ángeles Sa - anto,\nClama la creación Santo. D F#m E A/C# F#m7\nExaltado Dios Santo,\nSanto por siempre Bm7 Esus4 A\nVERSO2\nSi te ha perdonado y tienes salvación A D A\nCántale al Cordero que venció F#m7 E D\nSi te ha libertado, Su nombre ha puesto en ti A D A\nCántale al cordero que venció, Cantaremos siempre amén. F#m7 E D F#m7 E Bm7\nCORO\nClaman ángeles Sa - anto, Clama la creación Santo D F#m E A/C# F#m7\nExaltado Dios Santo, Santo por siempre Bm7 Esus4 A\nCanta el pueblo al Rey Sa - anto, Soberano es El, Santo D F#m E A/C# F#m7\nY por siempre es, Santo, Santo por siempre Bm7 E A\nPre-CORO\nCORO\nOUTRO:\nY por siempre es santo por siempre. Bm E A\nS página 143"},
   {id:4006,title:"Santo por siempre en",key:"G",author:"",section:"",gender:"mujer",content:"INTRO: G C Em D, G/B Em D G\nVERSO1\nMil generaciones, Se postran a adorarle. G C G\nLe cantan al cordero que venció. Em D C\nLos que nos precedieron, Y los que en El creerán. G C G\nLe cantarán a aquel que ya venció. Em D C\nPre-CORO\nTu nombre es mas alto, Tu nombre es mas grande. C Em D\nTu nombre, sobre todo es, Sean tronos, dominios. Em7 D C C Em\nPoderes, potestades, Tu nombre, sobre todo es. D Em D Am7\nCORO\nClaman ángeles Sa - anto, Clama la creación Santo. C Em D G/B Em7\nExaltado Dios Santo, Santo por siempre Am7 Dsus4 G\nVERSO2\nSi te ha perdonado y tienes salvación G C G\nCántale al Cordero que venció Em7 D C\nSi te ha libertado, Su nombre ha puesto en ti G C G\nCántale al cordero que venció, Cantaremos siempre amén. Em7 D C Em7 D Am7\nCORO\nClaman ángeles Sa - anto, Clama la creación Santo C Em D G/B Em7\nExaltado Dios Santo, Santo por siempre Am7 Dsus4 G\nCanta el pueblo al Rey Sa - anto, Soberano es El, Santo C Em D G/B Em7\nY por siempre es, Santo, Santo por siempre Am7 D G\nPre-CORO\nCORO\nOUTRO:\nY por siempre es santo por siempre. Am D G\nS página 144"}
+  ,
+{id:6001,title:"La Bondad de Dios",key:"A",author:"",section:"",gender:"",content:"[Verso 1]\nTe amo Dios, tu amor nunca me falla A D A\nMi existir en tus manos esta F#m D E\nDesde el momento en que despierto F#m D\nHasta el anochecer A E/G# F#m\nYo cantaré de la bondad de Dios D E A\n\n[Coro]\nEn mi vida has sido bueno D A\nEn mi vida has sido tan, tan fiel D A E\nCon mi ser con cada aliento D A E/G# F#m\nYo cantaré de la bondad de Dios D E A\n\n[Verso 2]\nYo amo tu voz, me has guiado por el fuego A D A\nTú cerca estás, en la oscuridad F#m D E\nTe conozco como padre y como amigo fiel F#m D A E/G# F#m\nMi vida está, en la bondad de Dios D E A\n\n[Puente]\nTu fidelidad sigue persiguiéndome A/C# D E A\nTu fidelidad sigue persiguiéndome A/C# D E A\nTodo lo que soy te lo entrego hoy, a ti me rendiré A/C# D E F#m\nTu fidelidad sigue persiguiéndome A/C# D E A"}
   ];
   userSongs.forEach(u=>{
     const idx=songs.findIndex(s=>s.id===u.id);
@@ -1481,6 +1548,23 @@ const spinStyle = document.createElement('style');
 spinStyle.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
 document.head.appendChild(spinStyle);
 
+
+// ── THEME ──
+function initTheme(){
+  const saved = localStorage.getItem('gdefe_theme') || 'dark';
+  applyTheme(saved);
+}
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : '');
+  const btn = document.getElementById('themeBtn');
+  if(btn) btn.textContent = theme === 'light' ? '🌑' : '🌙';
+  localStorage.setItem('gdefe_theme', theme);
+}
+function toggleTheme(){
+  const current = localStorage.getItem('gdefe_theme') || 'dark';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+initTheme();
 checkAdminSession();
 
 document.addEventListener('DOMContentLoaded',init);
