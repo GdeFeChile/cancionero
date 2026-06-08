@@ -102,6 +102,26 @@ hr {
   border: 0;
 }
 
+.sr-only:focus {
+  position: fixed;
+  top: var(--space-sm);
+  left: var(--space-sm);
+  width: auto;
+  height: auto;
+  padding: var(--space-sm) var(--space-md);
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  z-index: var(--z-toast);
+  font-weight: var(--font-weight-bold);
+  outline: none;
+}
+
 /* ── Utility: Text Alignment ───────────────────────────────────────────── */
 .text-center {
   text-align: center;

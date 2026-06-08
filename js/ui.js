@@ -1,9 +1,9 @@
 function renderSongCard(song) {
   return `
     <article class="card" data-id="${song.id}">
-      <h3>${escapeHtml(song.title)}</h3>
-      ${song.author ? `<p class="card-author">${escapeHtml(song.author)}</p>` : ''}
-      <div class="card-meta">
+      <h3 class="card__title">${escapeHtml(song.title)}</h3>
+      ${song.author ? `<p class="card__author">${escapeHtml(song.author)}</p>` : ''}
+      <div class="card__footer">
         ${song.section ? `<span class="badge">${escapeHtml(song.section)}</span>` : ''}
         ${song.key ? `<span class="badge badge-key">${escapeHtml(song.key)}</span>` : ''}
       </div>
@@ -105,7 +105,7 @@ function hideModal() {
 
 function showToast(message, type = 'info') {
   const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
+  toast.className = `toast toast--${type}`;
   toast.textContent = message;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);

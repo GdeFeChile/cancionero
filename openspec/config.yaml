@@ -1,0 +1,86 @@
+# openspec/config.yaml
+# SDD Configuration for "Cancionero GdeFe"
+schema: spec-driven
+
+context: |
+  Project: Cancionero GdeFe
+  Description: Static SPA web songbook (cancionero) with vanilla JS, CSS3, HTML5.
+  Stack: Vanilla JavaScript, CSS3 (modern/responsive/dark mode), HTML5
+  Architecture: Static SPA — no bundlers, no build tools, no frameworks
+  Hosting: GitHub Pages
+  Persistence: localStorage (client-side only)
+  Key API: Web Audio API for instrument tuner feature
+  Testing: None available (pure static frontend, no test runner infrastructure)
+  Repo: Freshly initialized git repo, no commits yet
+
+rules:
+  proposal:
+    - Define clear scope: what's in and what's out for each change
+    - Include rationale for Vanilla JS decisions (no framework)
+    - Consider GitHub Pages deployment constraints
+    - Account for offline-first capability (static files only)
+
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - Specify browser compatibility requirements
+    - Include localStorage schema when data persistence is involved
+
+  design:
+    - Document component/module separation in vanilla JS
+    - Specify CSS architecture (custom properties, BEM or similar)
+    - Include data flow diagrams for localStorage interactions
+    - Document Web Audio API usage patterns for the tuner
+    - Consider accessibility (a11y) from the start
+
+  tasks:
+    - Group by feature area (songbook, tuner, UI, persistence)
+    - Use hierarchical numbering
+    - Keep tasks completable in one session
+    - Each task MUST be independently testable in browser
+
+  apply:
+    - Follow Vanilla JS patterns: modules via script type="module"
+    - No external dependencies, no CDN libs unless justified
+    - All CSS via modern features: Grid, Flexbox, Custom Properties, Container Queries
+    - Pure semantic HTML — no div-soup
+    tdd: false
+    test_command: ""
+
+  verify:
+    test_command: ""
+    build_command: ""
+    coverage_threshold: 0
+    verification_method: manual_browser_testing
+    note: "No automated testing infrastructure available. Verification via manual browser testing and code review."
+
+  archive:
+    - Warn before merging destructive deltas into main specs
+
+testing:
+  strict_tdd: false
+  note: "Static frontend project with no test runner, no package.json, and no CI. Strict TDD is not possible without a test framework. Manual browser testing is the only verification method."
+  capabilities:
+    test_runner:
+      available: false
+      framework: none
+      command: ""
+    layers:
+      unit: { available: false, tool: "--" }
+      integration: { available: false, tool: "--" }
+      e2e: { available: false, tool: "--" }
+    coverage:
+      available: false
+      command: ""
+    quality:
+      linter: { available: false, command: "" }
+      type_checker: { available: false, command: "" }
+      formatter: { available: false, command: "" }
+
+persistence:
+  mode: openspec
+  artifact_store: openspec/
+  directories:
+    specs: openspec/specs/
+    changes: openspec/changes/
+    archive: openspec/changes/archive/
