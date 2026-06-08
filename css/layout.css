@@ -1,0 +1,131 @@
+/* ==========================================================================
+   Layout — Regions, Grids, Responsive Structure
+   Mobile-first approach throughout.
+   ========================================================================== */
+
+/* ── App Shell Layout ──────────────────────────────────────────────────── */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-dropdown);
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+
+.app-main {
+  flex: 1;
+  padding-top: 56px; /* offset for fixed header */
+  padding-bottom: var(--space-xl);
+}
+
+.app-footer {
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-sm) var(--space-md);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ── Song List Grid ────────────────────────────────────────────────────── */
+.song-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+}
+
+@media (min-width: 640px) {
+  .song-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .song-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ── Song Detail: two-column on desktop ────────────────────────────────── */
+.song-detail {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+  padding-top: var(--space-md);
+}
+
+@media (min-width: 1024px) {
+  .song-detail {
+    grid-template-columns: 1fr 320px;
+  }
+}
+
+.song-detail__lyrics {
+  order: 2;
+}
+
+.song-detail__sidebar {
+  order: 1;
+}
+
+@media (min-width: 1024px) {
+  .song-detail__lyrics {
+    order: 1;
+  }
+
+  .song-detail__sidebar {
+    order: 2;
+  }
+}
+
+/* ── Tuner Layout: centered single column ──────────────────────────────── */
+.tuner-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 56px);
+  padding: var(--space-xl) var(--space-md);
+  text-align: center;
+}
+
+/* ── Editor Layout ─────────────────────────────────────────────────────── */
+.editor-layout {
+  max-width: var(--bp-tablet);
+  margin: 0 auto;
+  padding: var(--space-md);
+}
+
+/* ── Bottom Navigation (mobile) ────────────────────────────────────────── */
+.bottom-nav {
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-dropdown);
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  justify-content: space-around;
+  padding: var(--space-xs) 0;
+}
+
+@media (min-width: 640px) {
+  .bottom-nav {
+    display: none;
+  }
+}
