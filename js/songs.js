@@ -59,4 +59,9 @@ function getSections() {
   return [...new Set(sections)].sort();
 }
 
-export { getAll, getById, create, update, remove, getBySection, getSections };
+function filterBySection(section) {
+  if (!section) return getAll();
+  return getBySection(section);
+}
+
+export { getAll, getById, create, update, remove, getBySection, getSections, filterBySection };
