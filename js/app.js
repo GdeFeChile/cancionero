@@ -257,6 +257,18 @@ function openSong(id) {
   $songTitle.textContent = song.title;
   const rawKey = song.key || 'C';
   $songMeta.textContent = (song.author ? escapeHtml(song.author) + ' · ' : '') + 'Tono: ' + displayChordKey(rawKey) + (song.tempo ? ' · ♩ ' + song.tempo + ' bpm' : '');
+
+  // Show/hide guitar arrangement button
+  const $guitarBtn = document.getElementById('btnGuitarArr');
+  if ($guitarBtn) {
+    if (song.guitarPdf) {
+      $guitarBtn.style.display = '';
+      $guitarBtn.title = 'Ver arreglo de guitarra';
+    } else {
+      $guitarBtn.style.display = 'none';
+    }
+  }
+
   $currentKey.textContent = displayChordKey(rawKey);
 
   renderLyrics(song);
@@ -634,6 +646,13 @@ document.getElementById('btnNotation').addEventListener('click', () => {
 
 document.getElementById('btnPrint').addEventListener('click', () => window.print());
 
+document.getElementById('btnGuitarArr')?.addEventListener('click', () => {
+  const song = getById(currentId);
+  if (song?.guitarPdf) {
+    window.open('arreglos/' + song.guitarPdf, '_blank');
+  }
+});
+
 document.getElementById('btnEditSong').addEventListener('click', () => {
   const song = getById(currentId);
   if (!song) return;
@@ -832,6 +851,13 @@ function openEditModal(song) {
           ).join('')}
         </select>
       </div>
+      <div class="frow">
+        <div class="fg">
+          <label>Arreglo guitarra (PDF)</label>
+          <input type="text" id="fGuitarPdf" value="${escapeHtml(s.guitarPdf || '')}" placeholder="ej: alaba.pdf">
+          <div class="form-help">Nombre del archivo PDF en la carpeta <code>arreglos/</code></div>
+        </div>
+      </div>
       <div class="fg">
         <label>Letra y Acordes</label>
         <textarea id="fLyrics" rows="15" placeholder="Copia aquí la letra con acordes...">${escapeHtml(s.lyrics || '')}</textarea>
@@ -852,6 +878,7 @@ function openEditModal(song) {
       author: document.getElementById('fAuthor').value.trim(),
       genre: document.getElementById('fGender').value,
       section: document.getElementById('fSection').value,
+      guitarPdf: document.getElementById('fGuitarPdf').value.trim(),
       lyrics: document.getElementById('fLyrics').value
     };
     if (!data.title) { showToast('El título es obligatorio'); return; }

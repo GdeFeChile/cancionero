@@ -232,6 +232,8 @@
 }
 .hdr-act:hover { color: var(--text); background: var(--panel); }
 .hdr-act.on { color: var(--accent); background: var(--accent-soft); }
+.hdr-pick { width: 16px; height: 16px; object-fit: contain; opacity: .75; filter: brightness(0.8); pointer-events: none; }
+.hdr-act:hover .hdr-pick { opacity: 1; filter: brightness(1.1); }
 
 /* ── Song View Fade In ── */
 #songView {
