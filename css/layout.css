@@ -101,6 +101,10 @@ body::before {
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .brand-sub {

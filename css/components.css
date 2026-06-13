@@ -507,7 +507,7 @@
   width: 28px; height: 28px; border: 1px solid var(--border); background: var(--panel);
   font-size: .85rem; cursor: pointer; opacity: 1;
   transition: all var(--transition-fast); border-radius: 6px;
-  vertical-align: middle; margin-left: 6px;
+  vertical-align: middle;
 }
 .theme-btn:hover { background: var(--accent-soft); border-color: var(--accent); box-shadow: 0 0 0 1px rgba(200,246,90,.25); }
 

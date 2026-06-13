@@ -125,7 +125,7 @@ function renderTuner() {
 }
 
 function renderThemeToggle(currentTheme) {
-  return `<button class="theme-btn" id="btn-theme" title="Cambiar tema">${currentTheme === 'dark' ? '☀️' : '🌙'}</button>`;
+  return `<button class="theme-btn" id="btn-theme" title="Cambiar tema">${currentTheme === 'dark' ? '☀️' : '☾'}</button>`;
 }
 
 function renderEmptyState(message = 'No hay canciones aún') {

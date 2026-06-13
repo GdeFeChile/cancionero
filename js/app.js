@@ -58,11 +58,11 @@ const $mobOvl = document.getElementById('mobOvl');
 const currentTheme = localStorage.getItem('gdefe_theme') ||
   (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 document.documentElement.setAttribute('data-theme', currentTheme);
-document.getElementById('themeBtn').textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+document.getElementById('themeBtn').textContent = currentTheme === 'dark' ? '☀️' : '☾';
 document.getElementById('themeBtn').addEventListener('click', () => {
   const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
-  document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+  document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '☾';
   localStorage.setItem('gdefe_theme', next);
 });
 
