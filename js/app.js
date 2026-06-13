@@ -659,10 +659,23 @@ document.getElementById('btnGuitarArr')?.addEventListener('click', () => {
   // 2) Try TAB_INDEX lookup (loaded from arreglos/tab-index.js)
   if (typeof TAB_INDEX !== 'undefined') {
     const key = song.title.toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove accents
-      .replace(/\(.*?\)/g, '').replace(/\[.*?\]/g, '')  // remove parenthetical
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/\(.*?\)/g, '').replace(/\[.*?\]/g, '')
       .replace(/[^a-z\s]/g, '').trim();
-    const tabText = TAB_INDEX[key];
+
+    // Exact match first
+    let tabText = TAB_INDEX[key];
+
+    // Partial match: find a tab key that starts with or is started by the song key
+    if (!tabText) {
+      for (const [tk, txt] of Object.entries(TAB_INDEX)) {
+        if (tk.startsWith(key) || key.startsWith(tk)) {
+          tabText = txt;
+          break;
+        }
+      }
+    }
+
     if (tabText) {
       song.guitarTab = tabText;
       showTabModal(song);
