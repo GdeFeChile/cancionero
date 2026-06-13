@@ -46,6 +46,12 @@
   --transition-fast: .15s var(--ease-out);
   --transition-base: .2s var(--ease-out);
   --transition-slow: .3s var(--ease-out);
+  /* Song-body (lyrics area) — dark theme */
+  --song-bg: #18181c;
+  --song-text: #e8e7e2;
+  --song-chord: #7ad4bb;
+  --song-muted: #7a7a84;
+  --song-border: rgba(255,255,255,.05);
 }
 
 [data-theme="light"] {
@@ -64,4 +70,10 @@
   --sec-color: #8a5a10;
   --glass-bg: rgba(255,255,255,.78);
   --glass-border: rgba(0,0,0,.07);
+  /* Song-body (lyrics area) — light theme */
+  --song-bg: #ffffff;
+  --song-text: #18181c;
+  --song-chord: #00633d;
+  --song-muted: #888894;
+  --song-border: rgba(0,0,0,.07);
 }

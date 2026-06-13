@@ -247,22 +247,23 @@
 
 /* ── Song Body (lyrics) ── */
 .song-body {
-  --text: #18181c;
-  --chord: #00633d;
-  --muted: #888894;
-  --muted2: #6a6a76;
-  --sec-color: #8a5a10;
-  --border: rgba(0,0,0,0.07);
-  --scrollbar-thumb: rgba(0,0,0,.12);
   font-family: 'Nunito', Calibri, sans-serif;
   font-weight: 600;
   font-size: 16px;
   flex: 1; overflow-y: auto; padding: 36px 52px; line-height: 1.9;
-  background: #fff;
+  background: var(--song-bg);
+  color: var(--song-text);
 }
+.song-body .chord-line { color: var(--song-chord); }
+.song-body .chord-inline { color: var(--song-chord); }
+.song-body .lyric-line { color: var(--song-text); }
+.song-body .lyric-text { color: var(--song-text); }
+.song-body .section-label { color: var(--song-muted); }
+.song-body .section-label::before,
+.song-body .section-label::after { background: var(--song-border); }
 .song-body::-webkit-scrollbar { width: 4px; }
-.song-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,.1); border-radius: 999px; }
-.song-body::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.18); }
+.song-body::-webkit-scrollbar-thumb { background: rgba(128,128,128,.15); border-radius: 999px; }
+.song-body::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,.25); }
 .song-body.two-col { column-count: 2; column-gap: 52px; }
 
 .song-line {
