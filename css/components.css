@@ -274,7 +274,7 @@
 .chord-line {
   font-family: var(--ff-mono); color: var(--chord);
   font-weight: 600; user-select: none; letter-spacing: .03em;
-  font-size: .82rem; opacity: .85;
+  font-size: .95em; opacity: .85;
 }
 .lyric-line { color: var(--text); font-weight: 400; }
 
@@ -289,7 +289,7 @@
 }
 .chord-inline {
   font-family: var(--ff-mono); color: var(--chord);
-  font-weight: 600; font-size: .8rem; letter-spacing: .03em;
+  font-weight: 600; font-size: .9em; letter-spacing: .03em;
   white-space: pre-wrap; flex-shrink: 0;
   opacity: .85;
   transition: opacity var(--transition-fast);
@@ -304,7 +304,7 @@
   margin-bottom: 2px;
 }
 .chord-above-block .chord-line {
-  font-size: .72rem;
+  font-size: .85em;
   opacity: .7;
   margin-bottom: 0;
   line-height: 1.4;
