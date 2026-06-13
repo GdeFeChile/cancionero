@@ -503,12 +503,12 @@
 /* ── Theme Toggle ── */
 .theme-btn {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 20px; height: 20px; border: none; background: transparent;
-  font-size: .62rem; cursor: pointer; opacity: .35;
-  transition: opacity .2s; border-radius: 4px;
-  vertical-align: middle; margin-left: 4px;
+  width: 28px; height: 28px; border: none; background: var(--panel);
+  font-size: .85rem; cursor: pointer; opacity: .7;
+  transition: all var(--transition-fast); border-radius: 6px;
+  vertical-align: middle; margin-left: 6px;
 }
-.theme-btn:hover { opacity: .7; background: var(--panel); }
+.theme-btn:hover { opacity: 1; background: var(--accent-soft); box-shadow: 0 0 0 1px rgba(200,246,90,.25); }
 
 /* ── Sync Bar ── */
 .sync-bar {
