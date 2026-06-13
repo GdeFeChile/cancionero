@@ -273,8 +273,8 @@
   min-height: 1.5em;
 }
 .chord-line {
-  font-family: var(--ff-mono); color: var(--chord);
-  font-weight: 600; user-select: none; letter-spacing: .03em;
+  font-family: 'Nunito', sans-serif; color: var(--chord);
+  font-weight: 700; user-select: none; letter-spacing: .02em;
   font-size: .95em; opacity: .85;
 }
 .lyric-line { color: var(--text); }
@@ -289,8 +289,8 @@
   color: var(--text);
 }
 .chord-inline {
-  font-family: var(--ff-mono); color: var(--chord);
-  font-weight: 600; font-size: .9em; letter-spacing: .03em;
+  font-family: 'Nunito', sans-serif; color: var(--chord);
+  font-weight: 700; font-size: .9em; letter-spacing: .02em;
   white-space: pre-wrap; flex-shrink: 0;
   opacity: .85;
   transition: opacity var(--transition-fast);
