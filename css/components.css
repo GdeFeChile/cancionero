@@ -205,7 +205,7 @@
 .transpose {
   display: flex; align-items: center; gap: 2px;
   background: var(--panel); border: 1px solid var(--border);
-  border-radius: 8px; padding: 2px 6px;
+  border-radius: 8px; padding: 2px 8px; height: 30px;
 }
 .tr-lbl { display: none; }
 .tr-btn {
@@ -232,10 +232,10 @@
 .ib.on { color: var(--accent); background: var(--accent-soft); }
 
 .hdr-act {
-  width: 30px; height: 26px;
+  width: 34px; height: 30px;
   border: none; background: transparent;
   color: var(--muted); border-radius: 6px; cursor: pointer;
-  font-size: .82rem; display: flex; align-items: center;
+  font-size: .95rem; display: flex; align-items: center;
   justify-content: center; transition: all var(--transition-fast);
 }
 .hdr-act:hover { color: var(--text); background: var(--panel); }
