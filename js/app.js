@@ -27,6 +27,7 @@ let currentId = null;
 let currentTranspose = 0;
 let fontSize = 100;
 let showChords = true;
+let chordsAbove = false;
 let useSpanishNotation = false;
 let numCols = 1;
 let isScrolling = false;
@@ -456,12 +457,17 @@ function renderLyrics(song) {
       if (nextIdx < lines.length) {
         const nextLine = lines[nextIdx].trim();
         // Merge only if next line is lyrics or section-like content
-        // (not a pure chord line, not a section label)
         const cleanNext = /^[\[\/]/.test(nextLine) ? nextLine.replace(/^[\/\[\]]+/, '').trim() : nextLine;
         if (!isPureChordLine(cleanNext) && !isSectionLabel(nextLine)) {
           const combinedChords = chordLines.join('  ');
-          html += `<div class="song-line mixed-line"><span class="lyric-text">${escapeHtml(cleanNext)}</span><span class="chord-inline">${escapeHtml(toSpanishChordsText(combinedChords))}</span></div>`;
-          i = nextIdx; // Skip the merged next line
+          const chordsHtml = escapeHtml(toSpanishChordsText(combinedChords));
+          const lyricsHtml = escapeHtml(cleanNext);
+          if (chordsAbove) {
+            html += `<div class="chord-above-block"><div class="song-line"><span class="chord-line">${chordsHtml}</span></div><div class="song-line"><span class="lyric-line">${lyricsHtml}</span></div></div>`;
+          } else {
+            html += `<div class="song-line mixed-line"><span class="lyric-text">${lyricsHtml}</span><span class="chord-inline">${chordsHtml}</span></div>`;
+          }
+          i = nextIdx;
           continue;
         }
       }
@@ -476,7 +482,13 @@ function renderLyrics(song) {
     // Check if inline mixed (lyrics + chords at end)
     const mixed = getMixedParts(cleanLine);
     if (mixed) {
-      html += `<div class="song-line mixed-line"><span class="lyric-text">${escapeHtml(mixed.lyrics)}</span><span class="chord-inline">${escapeHtml(toSpanishChordsText(mixed.chords))}</span></div>`;
+      const chordsHtml = escapeHtml(toSpanishChordsText(mixed.chords));
+      const lyricsHtml = escapeHtml(mixed.lyrics);
+      if (chordsAbove) {
+        html += `<div class="chord-above-block"><div class="song-line"><span class="chord-line">${chordsHtml}</span></div><div class="song-line"><span class="lyric-line">${lyricsHtml}</span></div></div>`;
+      } else {
+        html += `<div class="song-line mixed-line"><span class="lyric-text">${lyricsHtml}</span><span class="chord-inline">${chordsHtml}</span></div>`;
+      }
     } else {
       // Pure lyric line — already cleaned from markers
       html += `<div class="song-line"><span class="lyric-line">${escapeHtml(cleanLine)}</span></div>`;
@@ -496,6 +508,12 @@ function updateActiveSong() {
   // Update chord toggle button
   const chordsBtn = document.getElementById('btnChords');
   chordsBtn.style.opacity = showChords ? '1' : '.4';
+
+  // Update layout toggle button
+  const layoutBtn = document.getElementById('btnLayout');
+  if (layoutBtn) {
+    layoutBtn.classList.toggle('on', chordsAbove);
+  }
 
   // Update notation toggle button
   const notBtn = document.getElementById('btnNotation');
@@ -570,6 +588,13 @@ document.getElementById('btnChords').addEventListener('click', () => {
   $songBody.classList.toggle('hide-chords', !showChords);
   const btn = document.getElementById('btnChords');
   btn.style.opacity = showChords ? '1' : '.4';
+});
+
+document.getElementById('btnLayout').addEventListener('click', () => {
+  chordsAbove = !chordsAbove;
+  const btn = document.getElementById('btnLayout');
+  btn.classList.toggle('on', chordsAbove);
+  openSong(currentId);
 });
 
 document.getElementById('btnNotation').addEventListener('click', () => {

@@ -297,6 +297,21 @@
 
 .hide-chords .chord-line { display: none; }
 .hide-chords .chord-inline { display: none; }
+.hide-chords .chord-above-block { display: none; }
+
+/* ── Chords Above Layout ── */
+.chord-above-block {
+  margin-bottom: 2px;
+}
+.chord-above-block .chord-line {
+  font-size: .72rem;
+  opacity: .7;
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+.chord-above-block .lyric-line {
+  line-height: 1.5;
+}
 
 .section-label {
   display: inline-block;
