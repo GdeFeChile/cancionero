@@ -1,0 +1,9 @@
+# Ignore PDFs and extracted text files (large binary/content)
+*.pdf
+*.txt
+# Keep the scripts, index, and .gitkeep
+!.gitkeep
+!extract-tabs.py
+!batch-extract.py
+!build-index.py
+!tab-index.js

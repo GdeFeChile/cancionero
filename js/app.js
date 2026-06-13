@@ -649,10 +649,30 @@ document.getElementById('btnPrint').addEventListener('click', () => window.print
 document.getElementById('btnGuitarArr')?.addEventListener('click', () => {
   const song = getById(currentId);
   if (!song) return;
+
+  // 1) If tab text is embedded in the song, show it
   if (song.guitarTab) {
     showTabModal(song);
-  } else if (song.guitarPdf) {
-    window.open('arreglos/' + song.guitarPdf, '_blank');
+    return;
+  }
+
+  // 2) Try TAB_INDEX lookup (loaded from arreglos/tab-index.js)
+  if (typeof TAB_INDEX !== 'undefined') {
+    const key = song.title.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove accents
+      .replace(/\(.*?\)/g, '').replace(/\[.*?\]/g, '')  // remove parenthetical
+      .replace(/[^a-z\s]/g, '').trim();
+    const tabText = TAB_INDEX[key];
+    if (tabText) {
+      song.guitarTab = tabText;
+      showTabModal(song);
+      return;
+    }
+  }
+
+  // 3) Fallback: open PDF from arreglos/canciones/
+  if (song.guitarPdf) {
+    window.open('arreglos/canciones/' + song.guitarPdf, '_blank');
   }
 });
 
@@ -858,7 +878,7 @@ function openEditModal(song) {
         <div class="fg">
           <label>Arreglo guitarra (PDF)</label>
           <input type="text" id="fGuitarPdf" value="${escapeHtml(s.guitarPdf || '')}" placeholder="ej: alaba.pdf">
-          <div class="form-help">Nombre del archivo PDF en la carpeta <code>arreglos/</code></div>
+          <div class="form-help">Nombre del archivo PDF en la carpeta <code>arreglos/canciones/</code>. Ej: <code>Alaba (Atmosfera 127bpm).pdf</code></div>
         </div>
       </div>
       <div class="fg">
