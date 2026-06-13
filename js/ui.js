@@ -11,17 +11,36 @@ function renderSongCard(song) {
   `;
 }
 
-function renderSongDetail(song) {
+function renderSongDetail(song, showChords = true, numCols = 1, fontSize = 100) {
   const lyrics = song.lyrics ? song.lyrics.replace(/\n/g, '<br>') : 'Sin letra';
   return `
-    <div class="song-detail">
-      <div class="song-header">
-        <h2>${escapeHtml(song.title)}</h2>
-        ${song.author ? `<p class="song-author">${escapeHtml(song.author)}</p>` : ''}
-        <p class="song-key">Tono: <strong>${song.key || 'C'}</strong></p>
+    <div class="song-detail ${!showChords ? 'hide-chords' : ''} ${numCols === 2 ? 'song-detail--two-col' : ''}" style="font-size: ${fontSize}%">
+      <div class="song-hdr">
+        <div class="song-hdr-l">
+          <h2>${escapeHtml(song.title)}</h2>
+          <p class="song-meta">${escapeHtml(song.author || '')} · Tono: <strong>${song.key || 'C'}</strong></p>
+        </div>
+        <div class="song-hdr-r">
+          <div class="transpose-wrap">
+            <span class="tr-lbl">Tono</span>
+            <button class="tr-btn" id="transpose-down">−</button>
+            <span class="key-disp" id="current-key">${song.key || 'C'}</span>
+            <button class="tr-btn" id="transpose-up">+</button>
+          </div>
+          <button class="hdr-btn" id="btn-chords" title="Mostrar/ocultar acordes">🎸</button>
+          <button class="hdr-btn" id="btn-font-down" title="Reducir letra">A−</button>
+          <button class="hdr-btn" id="btn-font-up" title="Aumentar letra">A+</button>
+          <button class="hdr-btn" id="btn-columns" title="Cambiar columnas">${numCols === 2 ? '⊟' : '⊞'}</button>
+          <button class="hdr-btn" id="btn-print" title="Imprimir">🖨</button>
+        </div>
       </div>
       <div class="song-scroll-container">
-        <div class="song-lyrics">${lyrics}</div>
+        <div class="song-body song-lyrics">${lyrics}</div>
+      </div>
+      <div class="scroll-bar">
+        <button class="scroll-tog" id="btn-auto-scroll">▶ Auto-scroll</button>
+        <label>Velocidad</label>
+        <input type="range" id="scroll-speed" min="1" max="10" value="3">
       </div>
     </div>
   `;
@@ -79,19 +98,34 @@ function renderSongForm(song = null) {
 
 function renderTuner() {
   return `
-    <div class="tuner">
-      <h2>Afinador</h2>
-      <div class="tuner-display">
-        <div class="tuner-note">—</div>
-        <div class="tuner-frequency">0 Hz</div>
-        <div class="tuner-cents"></div>
+    <div class="tuner-view">
+      <div class="tuner-note" id="tuner-note">—</div>
+      <div class="tuner-freq" id="tuner-freq">0 Hz</div>
+      <div class="tuner-meter">
+        <div class="tm-line"></div>
+        <div class="tm-ind" id="tm-ind"></div>
       </div>
-      <button id="btn-tuner" class="btn btn-primary">Iniciar Afinador</button>
+      <div class="tuner-labels">
+        <span>♭</span>
+        <span id="tuner-status" class="tuner-status">—</span>
+        <span>♯</span>
+      </div>
+      <button class="tuner-start" id="btn-tuner">🎸 Iniciar Afinador</button>
       <div class="tuner-strings">
-        <p>Toca las notas de referencia: E4 B3 G3 D3 A2 E2</p>
+        <button class="str-btn" data-note="E4">E4</button>
+        <button class="str-btn" data-note="B3">B3</button>
+        <button class="str-btn" data-note="G3">G3</button>
+        <button class="str-btn" data-note="D3">D3</button>
+        <button class="str-btn" data-note="A2">A2</button>
+        <button class="str-btn" data-note="E2">E2</button>
       </div>
+      <p class="tuner-hint">Toca una nota para empezar. El medidor indica qué tan afinado estás.</p>
     </div>
   `;
+}
+
+function renderThemeToggle(currentTheme) {
+  return `<button class="theme-btn" id="btn-theme" title="Cambiar tema">${currentTheme === 'dark' ? '☀️' : '🌙'}</button>`;
 }
 
 function renderEmptyState(message = 'No hay canciones aún') {
@@ -206,6 +240,17 @@ function clearValidationErrors() {
 }
 
 // ── Filter Bar ─────────────────────────────────────────────────────────────
+// ── Search Input ─────────────────────────────────────────────────────────
+function renderSearchInput(query = '') {
+  return `
+    <div class="search-wrap">
+      <svg class="search-icon" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="search-input" class="search-input" placeholder="Buscar canción…" value="${escapeHtml(query)}">
+    </div>
+  `;
+}
+
+// ── Filter Bar ─────────────────────────────────────────────────────────────
 function renderFilterBar(sections, activeSection = null) {
   if (!sections.length) return '';
   let html = '<div class="filter-bar">';
@@ -262,5 +307,6 @@ export {
   iconPlus, iconPencil, iconTrash, iconPlay, iconPause, iconMusicNote, iconHome, iconArrowLeft,
   confirmModalHtml, renderValidationError, clearValidationErrors,
   renderFilterBar, renderEmptyFilterState,
-  renderAutoScrollControl, renderBottomNav
+  renderAutoScrollControl, renderBottomNav,
+  renderSearchInput, renderThemeToggle
 };

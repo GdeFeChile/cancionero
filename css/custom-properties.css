@@ -1,96 +1,67 @@
-/* ==========================================================================
-   Design Tokens — Custom Properties
-   Light theme on :root, dark mode via @media (prefers-color-scheme: dark)
-   All color pairs meet WCAG AA 4.5:1 contrast minimum.
-   ========================================================================== */
-
 :root {
-  /* ── Colors — Light Theme ─────────────────────────────────────────────── */
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-secondary: #7c3aed;
-  --color-secondary-hover: #6d28d9;
-  --color-surface: #ffffff;
-  --color-background: #f8fafc;
-  --color-text: #0f172a;
-  --color-text-secondary: #475569;
-  --color-border: #e2e8f0;
-  --color-accent: #b45309;
-  --color-danger: #dc2626;
-  --color-danger-hover: #b91c1c;
-  --color-success: #16a34a;
-  --color-info: #0284c7;
-
-  /* ── Typography ──────────────────────────────────────────────────────── */
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-weight-normal: 400;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  --line-height: 1.5;
-
-  /* ── Spacing (4px base) ──────────────────────────────────────────────── */
-  --space-xs: 0.25rem;   /* 4px */
-  --space-sm: 0.5rem;    /* 8px */
-  --space-md: 1rem;      /* 16px */
-  --space-lg: 1.5rem;    /* 24px */
-  --space-xl: 2rem;      /* 32px */
-  --space-2xl: 3rem;     /* 48px */
-
-  /* ── Border Radius ───────────────────────────────────────────────────── */
-  --radius-sm: 0.25rem;   /* 4px */
-  --radius-md: 0.5rem;    /* 8px */
-  --radius-lg: 1rem;      /* 16px */
-  --radius-full: 50%;
-
-  /* ── Shadows ─────────────────────────────────────────────────────────── */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-
-  /* ── Breakpoints (used in @media queries too) ───────────────────────── */
-  --bp-mobile: 640px;
-  --bp-tablet: 1024px;
-  --bp-desktop: 1280px;
-
-  /* ── Transitions ─────────────────────────────────────────────────────── */
-  --transition-fast: 150ms;
-  --transition-normal: 250ms;
-  --easing-default: ease-in-out;
-
-  /* ── Z-Index Scale ───────────────────────────────────────────────────── */
-  --z-dropdown: 100;
-  --z-modal: 200;
-  --z-toast: 300;
+  --bg: #0e0e10;
+  --surface: #161618;
+  --panel: #1c1c1f;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.1);
+  --accent: #c8f65a;
+  --accent-soft: rgba(200,246,90,.07);
+  --text: #eeede8;
+  --muted: #6a6a72;
+  --muted2: #888892;
+  --chord: #7ad4bb;
+  --chord-soft: rgba(122,212,187,.08);
+  --sec-color: #c8a96e;
+  --danger: #e85050;
+  --danger-soft: rgba(232,80,80,.08);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.25);
+  --shadow-md: 0 4px 10px rgba(0,0,0,.35);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.45);
+  --shadow-xl: 0 12px 36px rgba(0,0,0,.55);
+  --glass-bg: rgba(22,22,24,.78);
+  --glass-border: rgba(255,255,255,.06);
+  --glass-blur: 16px;
+  --noise-opacity: .01;
+  --letter-spacing-display: -.04em;
+  --letter-spacing-heading: -.02em;
+  --letter-spacing-body: .005em;
+  --letter-spacing-caption: .08em;
+  --font-size-xs: .62rem;
+  --font-size-sm: .72rem;
+  --font-size-base: .84rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.2rem;
+  --font-size-xl: 1.4rem;
+  --font-size-2xl: 1.8rem;
+  --scrollbar-width: 4px;
+  --scrollbar-thumb: rgba(255,255,255,.08);
+  --scrollbar-thumb-hover: rgba(255,255,255,.15);
+  --rs: 8px;
+  --rs-sm: 6px;
+  --ff-head: 'Inter', system-ui, sans-serif;
+  --ff-body: 'Inter', system-ui, sans-serif;
+  --ff-mono: 'JetBrains Mono', monospace;
+  --ease-out: cubic-bezier(0.4,0,0.2,1);
+  --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --transition-fast: .15s var(--ease-out);
+  --transition-base: .2s var(--ease-out);
+  --transition-slow: .3s var(--ease-out);
 }
 
-/* ── Dark Theme Overrides ──────────────────────────────────────────────── */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-primary: #60a5fa;
-    --color-primary-hover: #93bbfd;
-    --color-secondary: #a78bfa;
-    --color-secondary-hover: #c4b5fd;
-    --color-surface: #1e293b;
-    --color-background: #0f172a;
-    --color-text: #f1f5f9;
-    --color-text-secondary: #94a3b8;
-    --color-border: #334155;
-    --color-accent: #fbbf24;
-    --color-danger: #f87171;
-    --color-danger-hover: #fca5a5;
-    --color-success: #4ade80;
-    --color-info: #38bdf8;
-
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-  }
+[data-theme="light"] {
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --panel: #eeede8;
+  --border: rgba(0,0,0,0.07);
+  --border2: rgba(0,0,0,0.12);
+  --accent: #4a8a1a;
+  --accent-soft: rgba(74,138,26,.07);
+  --text: #18181c;
+  --muted: #888894;
+  --muted2: #6a6a76;
+  --chord: #16705a;
+  --chord-soft: rgba(22,112,90,.08);
+  --sec-color: #8a5a10;
+  --glass-bg: rgba(255,255,255,.78);
+  --glass-border: rgba(0,0,0,.07);
 }

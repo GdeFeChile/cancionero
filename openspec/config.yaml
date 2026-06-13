@@ -32,6 +32,8 @@ rules:
     - Include data flow diagrams for localStorage interactions
     - Document Web Audio API usage patterns for the tuner
     - Consider accessibility (a11y) from the start
+    - Always add `.sr-only:focus` visible state when using skip-to-content links
+    - Document route lifecycle hooks (beforeRender/render/afterRender) for dynamic UI states
 
   tasks:
     - Group by feature area (songbook, tuner, UI, persistence)
@@ -44,6 +46,7 @@ rules:
     - No external dependencies, no CDN libs unless justified
     - All CSS via modern features: Grid, Flexbox, Custom Properties, Container Queries
     - Pure semantic HTML — no div-soup
+    - Cross-reference CSS BEM class names with JS-rendered template classes to ensure alignment
     tdd: false
     test_command: ""
 
