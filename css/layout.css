@@ -6,8 +6,24 @@ body {
   overflow: hidden;
   font-size: 13.5px;
   -webkit-font-smoothing: antialiased;
-  scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb, rgba(255,255,255,.1)) transparent;
+}
+
+::-webkit-scrollbar {
+  width: var(--scrollbar-width, 4px);
+  height: var(--scrollbar-width, 4px);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, rgba(255,255,255,.08));
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, rgba(255,255,255,.15));
 }
 
 body::before {
@@ -173,7 +189,7 @@ body::before {
 }
 
 .col-head {
-  padding: 7px 12px;
+  padding: 7px 16px;
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.09em;
@@ -196,16 +212,12 @@ body::before {
 .song-list {
   flex: 1;
   overflow-y: auto;
+  transition: opacity .15s var(--ease-out);
 }
 
-.song-list::-webkit-scrollbar {
-  width: 3px;
-}
-
-.song-list::-webkit-scrollbar-thumb {
-  background: var(--border2);
-  border-radius: 2px;
-}
+.song-list::-webkit-scrollbar { width: 3px; }
+.song-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 999px; }
+.song-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.15); }
 
 .sb-foot {
   display: flex;

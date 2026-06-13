@@ -165,6 +165,9 @@ function renderAlphaTabs() {
 
 // ── Render Song List ──
 function renderSongList() {
+  // Quick fade hint when filters change
+  $songList.style.opacity = '.5';
+
   let songs = getAll();
 
   // Filter by alpha
@@ -221,6 +224,9 @@ function renderSongList() {
 
   // Update clear button visibility
   $searchClear.classList.toggle('visible', searchQuery !== '');
+
+  // Restore opacity after DOM update
+  requestAnimationFrame(() => { $songList.style.opacity = '1'; });
 }
 
 // ── Open Song ──
@@ -234,6 +240,12 @@ function openSong(id) {
   $welcome.style.display = 'none';
   $songView.style.display = 'flex';
   $tunerView.classList.remove('active');
+
+  // Trigger enter animation (remove class to restart if same view)
+  $songView.classList.remove('song-view-enter');
+  // Force reflow so the class removal registers before re-adding
+  void $songView.offsetWidth;
+  $songView.classList.add('song-view-enter');
 
   // Update sidebar active state
   $songList.querySelectorAll('.si').forEach(el => el.classList.toggle('active', String(el.dataset.id) === String(currentId)));
