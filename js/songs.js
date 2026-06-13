@@ -71,8 +71,6 @@ function create(data) {
     section: data.section || '',
     genre: data.genre || 'Neutro',
     lyrics: data.lyrics || '',
-    guitarPdf: data.guitarPdf || '',
-    guitarTab: data.guitarTab || '',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };

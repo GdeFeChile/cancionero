@@ -143,52 +143,33 @@ const DEFAULT_SONGS = [
   { id: 7, title: 'Alaba', key: '', author: '', section: '', genre: 'Neutro', lyrics: `
 // CORO 1
 Que toda la creación
-Alabe a Dios, alaba a Dios
-Mi corazón
 Alabe a Dios
-Alaba a Dios
-Mi corazón
+Alabe a Dios
 
 // VERSO 1
 Te alabo en el valle                        E
 Te alabo en el monte                        F#m   E
-No me detengo                               C#m
 Te alabo en el día                          B     A
 Te alabo en la noche                        E
-Mi Dios vivo está                           A
-Cómo me voy a callar                        E     B
-Oh oh oh
 
 // VERSO 2
-Alaba a Dios mi corazón                     C#m   A   E   B
 Te alabo en el medio
 Estando rodeado
-
-// PUENTE
 Porque cuando alabo
-Alabo al que reina                          E
 Tú estás a mi lado
-Alabo al Señor                              F#m
-Alabo a aquel que la tumba venció           C#m   A
 
 // PRE CORO
-Alabo al que es bueno                       E
 Mientras tenga aliento                      B
-Alabo al que es fiel                        F#m
 Mi alma canta y                             A
-Le alabo porque no hay otro como Él         C#m   A
 
 // CORO 1
-
-// SOLO
-
-// CORO 1
+Alaba a Dios                                C#m   A   E
+Mi corazón                                  B
+Alaba a Dios                                C#m   A   E
+Mi corazón                                  B
 
 // VERSO 3
-Que toda la creación
-Alabe a Dios
 Te alabo al sentirlo
-Alabe a Dios
 Y aun cuando no
 Te alabo y sé
 Que tú eres mi favor.
@@ -202,6 +183,37 @@ Hay liberación
 // PRE CORO
 Mientras tenga aliento
 Mi alma canta y
+
+// CORO 1
+Alaba a Dios
+Mi corazón
+Alaba a Dios
+Mi corazón
+
+// CORO 2
+No me detengo                               C#m
+Mi Dios vivo está                           A
+Cómo me voy a callar                        E     B
+Oh oh oh
+Alaba a Dios mi corazón                     C#m   A   E   B
+
+// PUENTE
+Alabo al que reina                          E
+Alabo al Señor                              F#m
+Alabo a aquel que la tumba venció           C#m   A
+Alabo al que es bueno                       E
+Alabo al que es fiel                        F#m
+Le alabo porque no hay otro como Él         C#m   A
+
+// CORO 1
+
+// CORO 2
+
+// SOLO
+
+//// QUE TODA LA CREACIÓN
+Alabe a Dios
+Alabe a Dios
     ` },
   { id: 8, title: 'Bueno es', key: '', author: '', section: '', genre: 'Neutro', lyrics: `
   Tu gracia me lleva a arrepentirme                  La  Mi

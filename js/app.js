@@ -1,6 +1,7 @@
 import { getAll, getById, create, update, remove, getSections } from './songs.js';
 import { transposeLyrics, getKeyName, NOTES } from './chords.js';
 import { startTuner, stopTuner, setOnPitchDetected, getIsRunning, renderGauge } from './tuner.js';
+import { getAll as getAllPlaylists, getById as getPlaylistById, create as createPlaylist, remove as removePlaylist, addSong as addSongToPlaylist, removeSong as removeSongFromPlaylist, moveSong as moveSongInPlaylist } from './playlists.js';
 
 // ── Chord Notation Helpers ──
 const NOTE_TO_SPANISH = { 'C':'Do', 'C#':'Do#', 'Db':'Reb', 'D':'Re', 'D#':'Re#', 'Eb':'Mib', 'E':'Mi', 'F':'Fa', 'F#':'Fa#', 'Gb':'Solb', 'G':'Sol', 'G#':'Sol#', 'Ab':'Lab', 'A':'La', 'A#':'La#', 'Bb':'Sib', 'B':'Si' };
@@ -26,6 +27,7 @@ let searchQuery = '';
 let currentId = null;
 let currentTranspose = 0;
 let fontSize = 120;
+let savedFontSize = 120;
 let showChords = true;
 let chordsAbove = false;
 let useSpanishNotation = false;
@@ -35,6 +37,11 @@ let scrollRaf = null;
 let scrollSpeed = 3;
 let currentView = 'songs';
 let searchTimer;
+
+// ── New state: Favoritos y Setlists ──
+let favorites = [];
+let showFavoritesOnly = false;
+let selectedPlaylistId = null;
 
 // ── DOM references ──
 const $songList = document.getElementById('songList');
@@ -53,6 +60,8 @@ const $currentKey = document.getElementById('currentKey');
 const $sidebar = document.getElementById('sidebar');
 const $mobBtn = document.getElementById('mobBtn');
 const $mobOvl = document.getElementById('mobOvl');
+const $favoritesFilter = document.getElementById('favoritesFilter');
+const $btnSetlist = document.getElementById('btnSetlist');
 
 // ── Theme ──
 const currentTheme = localStorage.getItem('gdefe_theme') ||
@@ -95,6 +104,13 @@ function showView(view) {
 $mobBtn.addEventListener('click', () => { $sidebar.classList.toggle('open'); $mobOvl.classList.toggle('active'); });
 $mobOvl.addEventListener('click', () => { $sidebar.classList.remove('open'); $mobOvl.classList.remove('active'); });
 
+// ── Sidebar toggle (desktop) ──
+document.getElementById('btnToggleSidebar').addEventListener('click', () => {
+  const btn = document.getElementById('btnToggleSidebar');
+  $sidebar.classList.toggle('collapsed');
+  btn.textContent = $sidebar.classList.contains('collapsed') ? '▶' : '◀';
+});
+
 // ── Search ──
 $searchInput.addEventListener('input', (e) => {
   const val = e.target.value;
@@ -112,6 +128,22 @@ $searchClear.addEventListener('click', () => {
   renderSongList();
   $searchInput.focus();
 });
+
+// ── Favorites filter ──
+if ($favoritesFilter) {
+  $favoritesFilter.addEventListener('click', () => {
+    showFavoritesOnly = !showFavoritesOnly;
+    $favoritesFilter.classList.toggle('active', showFavoritesOnly);
+    renderSongList();
+  });
+}
+
+// ── Playlist / Setlist button ──
+if ($btnSetlist) {
+  $btnSetlist.addEventListener('click', () => {
+    renderPlaylistModal();
+  });
+}
 
 // ── Helpers ──
 function escapeHtml(str) {
@@ -166,10 +198,15 @@ function renderAlphaTabs() {
   });
 }
 
-// ── Render Song List ──
+// ── Render Song List (catalog or setlist) ──
 function renderSongList() {
   // Quick fade hint when filters change
   $songList.style.opacity = '.5';
+
+  if (selectedPlaylistId) {
+    renderSetlistView();
+    return;
+  }
 
   let songs = getAll();
 
@@ -183,10 +220,21 @@ function renderSongList() {
     songs = songs.filter(s => s.section === activeSection);
   }
 
-  // Filter by search (with accent normalization)
+  // Filter by search — #key busca por tonalidad, texto normal busca por título
   if (searchQuery.trim()) {
-    const q = searchQuery.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    songs = songs.filter(s => s.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(q));
+    const raw = searchQuery.trim();
+    if (raw.startsWith('#')) {
+      const q = raw.slice(1).toLowerCase();
+      songs = songs.filter(s => (s.key || '').toLowerCase().includes(q));
+    } else {
+      const q = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      songs = songs.filter(s => s.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(q));
+    }
+  }
+
+  // Filter by favorites
+  if (showFavoritesOnly) {
+    songs = songs.filter(s => favorites.includes(String(s.id)));
   }
 
   // Update header
@@ -195,41 +243,205 @@ function renderSongList() {
   $colCount.textContent = songs.length;
 
   if (!songs.length) {
-    const msg = searchQuery.trim() ? 'No se encontraron canciones' : 'No hay canciones';
+    let msg = searchQuery.trim() ? 'No se encontraron canciones' : 'No hay canciones';
+    if (showFavoritesOnly && !searchQuery.trim()) {
+      msg = 'No hay canciones favoritas';
+    } else if (showFavoritesOnly) {
+      msg = 'No se encontraron canciones favoritas';
+    }
     $songList.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:.8rem">' + msg + '</div>';
+    requestAnimationFrame(() => { $songList.style.opacity = '1'; });
     return;
   }
 
   $songList.innerHTML = songs.map(s => {
     const isActive = String(s.id) === String(currentId);
+    const isFav = favorites.includes(String(s.id));
     const sectionLabel = s.section ? `<div class="si-meta">${escapeHtml(s.section)}</div>` : '';
+    const starHtml = `<span class="si-star${isFav ? ' on' : ''}" data-id="${s.id}">${isFav ? '⭐' : '☆'}</span>`;
     return `
       <div class="si${isActive ? ' active' : ''}" data-id="${s.id}" tabindex="0">
         <div>
-          <div class="si-title">${escapeHtml(s.title)}</div>
+          <div class="si-title">${escapeHtml(s.title)}${starHtml}</div>
           ${sectionLabel}
         </div>
-        <span class="si-key">${s.key || 'C'}</span>
+        <div class="si-right">
+          <span class="si-key">${s.key || 'C'}</span>
+        </div>
       </div>
     `;
   }).join('');
 
-  // Wire song clicks
+  // Wire catalog clicks
   $songList.querySelectorAll('.si').forEach(el => {
-    el.addEventListener('click', () => {
-      openSong(el.dataset.id);
-    });
-    el.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      // Basic context menu would go here
+    el.addEventListener('click', () => openSong(el.dataset.id));
+    el.addEventListener('contextmenu', (e) => e.preventDefault());
+  });
+  $songList.querySelectorAll('.si-star').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (el.dataset.id) toggleFavorite(el.dataset.id);
     });
   });
 
-  // Update clear button visibility
   $searchClear.classList.toggle('visible', searchQuery !== '');
-
-  // Restore opacity after DOM update
   requestAnimationFrame(() => { $songList.style.opacity = '1'; });
+}
+
+// ── Render Setlist View (hybrid: playlist songs + add from catalog) ──
+function renderSetlistView() {
+  const pl = getPlaylistById(selectedPlaylistId);
+  if (!pl) { selectedPlaylistId = null; renderSongList(); return; }
+
+  $sidebar.classList.add('sl-mode');
+
+  $colHead.textContent = pl.name;
+  $colCount.textContent = pl.songs.length + ' canciones';
+
+  const plSongs = pl.songs.map(id => getById(id)).filter(Boolean);
+
+  // Build the playlist songs section
+  const songsHtml = !plSongs.length
+    ? '<div style="padding:12px 22px;color:var(--muted);font-size:.78rem">Setlist vacío. Agrega canciones abajo.</div>'
+    : plSongs.map((s, idx) => {
+        const isActive = String(s.id) === String(currentId);
+        const isFav = favorites.includes(String(s.id));
+        const starHtml = `<span class="si-star${isFav ? ' on' : ''}" data-id="${s.id}">${isFav ? '⭐' : '☆'}</span>`;
+        return `
+          <div class="si sl-song${isActive ? ' active' : ''}" data-id="${s.id}" tabindex="0">
+            <span class="sl-num">${idx + 1}</span>
+            <div class="sl-song-body">
+              <div class="si-title">${escapeHtml(s.title)}${starHtml}</div>
+            </div>
+            <div class="sl-actions">
+              <button class="sl-btn${idx === 0 ? ' sl-btn-dis' : ''}" data-id="${s.id}" data-dir="up" title="Subir">▲</button>
+              <button class="sl-btn${idx === plSongs.length - 1 ? ' sl-btn-dis' : ''}" data-id="${s.id}" data-dir="down" title="Bajar">▼</button>
+              <button class="sl-btn sl-btn-rm" data-id="${s.id}" title="Quitar del setlist">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+  // Full catalog for the "add" section (all songs, filtered by active alpha/section)
+  let allSongs = getAll().sort((a, b) => a.title.localeCompare(b.title, 'es'));
+  if (activeAlpha !== 'ALL') {
+    allSongs = allSongs.filter(s => s.title.charAt(0).toUpperCase() === activeAlpha);
+  }
+  if (activeSection) {
+    allSongs = allSongs.filter(s => s.section === activeSection);
+  }
+  const plSongIds = new Set(pl.songs.map(id => String(id)));
+
+  $songList.innerHTML = `
+    <div class="sl-back" id="slBack">← Volver al catálogo</div>
+    <div class="sl-songs-wrap">${songsHtml}</div>
+    <div class="sl-divider"></div>
+    <div class="sl-add-section">
+      <div class="sl-add-title">↓ Agregar canciones</div>
+      <input type="text" class="sl-add-search" id="slAddSearch" placeholder="Buscar canción..." autocomplete="off">
+      <div class="sl-add-results" id="slAddResults"></div>
+    </div>
+  `;
+
+  // ── Event Wiring ──
+
+  // Back button
+  document.getElementById('slBack')?.addEventListener('click', deselectSetlist);
+
+  // Open song on click
+  document.querySelectorAll('.sl-song').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.sl-btn')) return;
+      openSong(el.dataset.id);
+    });
+  });
+
+  // Toggle favorite from setlist song
+  document.querySelectorAll('.sl-song .si-star').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (el.dataset.id) toggleFavorite(el.dataset.id);
+    });
+  });
+
+  // Setlist song actions (▲ ▼ ✕)
+  document.querySelectorAll('.sl-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const dir = btn.dataset.dir;
+      if (dir) {
+        moveSongInPlaylist(selectedPlaylistId, id, dir);
+        renderSetlistView();
+      } else {
+        removeSongFromPlaylist(selectedPlaylistId, id);
+        renderSetlistView();
+      }
+    });
+  });
+
+  // ── Add-song search ──
+  const $addSearch = document.getElementById('slAddSearch');
+  const $addResults = document.getElementById('slAddResults');
+
+  function renderAddResults(query) {
+    const q = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const filtered = !q
+      ? allSongs
+      : allSongs.filter(s =>
+          s.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(q)
+        );
+
+    if (!filtered.length) {
+      $addResults.innerHTML = '<div class="sl-add-empty">Sin resultados</div>';
+      return;
+    }
+
+    $addResults.innerHTML = filtered.map(s => {
+      const inSetlist = plSongIds.has(String(s.id));
+      return `
+        <div class="sl-add-item${inSetlist ? ' added' : ''}" data-id="${s.id}">
+          <span class="sl-add-item-title">${escapeHtml(s.title)}</span>
+          <span class="si-key" style="margin:0 8px 0 auto">${s.key || 'C'}</span>
+          ${inSetlist
+            ? '<span class="sl-add-done">✓</span>'
+            : '<button class="sl-add-btn" data-id="' + s.id + '">+</button>'
+          }
+        </div>
+      `;
+    }).join('');
+
+    // Wire + buttons
+    $addResults.querySelectorAll('.sl-add-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const songId = btn.dataset.id;
+        addSongToPlaylist(selectedPlaylistId, songId);
+        const s = getById(songId);
+        showToast(`"${s ? s.title : ''}" agregado al setlist`);
+        renderSetlistView();
+      });
+    });
+  }
+
+  // Initial render of add results (all songs)
+  renderAddResults('');
+
+  // Debounced search
+  let addSearchTimer = null;
+  $addSearch.addEventListener('input', () => {
+    clearTimeout(addSearchTimer);
+    addSearchTimer = setTimeout(() => renderAddResults($addSearch.value), 100);
+  });
+
+  requestAnimationFrame(() => { $songList.style.opacity = '1'; });
+}
+
+function deselectSetlist() {
+  selectedPlaylistId = null;
+  $sidebar.classList.remove('sl-mode');
+  updateSetlistButton();
+  renderSongList();
 }
 
 // ── Open Song ──
@@ -258,18 +470,14 @@ function openSong(id) {
   const rawKey = song.key || 'C';
   $songMeta.textContent = (song.author ? escapeHtml(song.author) + ' · ' : '') + 'Tono: ' + displayChordKey(rawKey) + (song.tempo ? ' · ♩ ' + song.tempo + ' bpm' : '');
 
-  // Show/hide guitar arrangement button
-  const $guitarBtn = document.getElementById('btnGuitarArr');
-  if ($guitarBtn) {
-    if (song.guitarTab || song.guitarPdf) {
-      $guitarBtn.style.display = '';
-      $guitarBtn.title = song.guitarTab ? 'Ver tablatura' : 'Ver arreglo PDF';
-    } else {
-      $guitarBtn.style.display = 'none';
-    }
-  }
-
   $currentKey.textContent = displayChordKey(rawKey);
+
+  // Update detail view favorite star
+  const $favDetail = document.getElementById('btnFavoriteDetail');
+  if ($favDetail) {
+    $favDetail.textContent = favorites.includes(String(song.id)) ? '⭐' : '☆';
+    $favDetail.onclick = () => toggleFavorite(song.id);
+  }
 
   renderLyrics(song);
   updateActiveSong();
@@ -445,18 +653,19 @@ function renderLyrics(song) {
   }
 
   const lines = lyrics.split('\n');
-  let html = '';
+  const lineHtmls = [];
+  function pushHtml(h) { lineHtmls.push(h); }
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) {
-      html += '<div class="empty-line"></div>';
+      pushHtml('<div class="empty-line"></div>');
       continue;
     }
 
     if (isSectionLabel(line)) {
       const text = line.replace(/^[\/\[\]]+/, '').trim();
-      html += `<div class="section-label">${escapeHtml(text)}</div>`;
+      pushHtml(`<div class="section-label">${escapeHtml(text)}</div>`);
       continue;
     }
 
@@ -490,9 +699,9 @@ function renderLyrics(song) {
           const chordsHtml = escapeHtml(toSpanishChordsText(combinedChords));
           const lyricsHtml = escapeHtml(cleanNext);
           if (chordsAbove) {
-            html += `<div class="chord-above-block"><div class="song-line"><span class="chord-line">${chordsHtml}</span></div><div class="song-line"><span class="lyric-line">${lyricsHtml}</span></div></div>`;
+            pushHtml(`<div class="chord-above-block"><div class="song-line"><span class="chord-line">${chordsHtml}</span></div><div class="song-line"><span class="lyric-line">${lyricsHtml}</span></div></div>`);
           } else {
-            html += `<div class="song-line mixed-line"><span class="lyric-text">${lyricsHtml}</span><span class="chord-inline">${chordsHtml}</span></div>`;
+            pushHtml(`<div class="song-line mixed-line"><span class="lyric-text">${lyricsHtml}</span><span class="chord-inline">${chordsHtml}</span></div>`);
           }
           i = nextIdx;
           continue;
@@ -500,7 +709,7 @@ function renderLyrics(song) {
       }
       // Can't merge — render as chord lines
       chordLines.forEach(cl => {
-        html += `<div class="song-line"><span class="chord-line">${escapeHtml(toSpanishChordsText(cl))}</span></div>`;
+        pushHtml(`<div class="song-line"><span class="chord-line">${escapeHtml(toSpanishChordsText(cl))}</span></div>`);
       });
       i = nextIdx - 1; // Skip ahead past accumulated chords
       continue;
@@ -512,23 +721,254 @@ function renderLyrics(song) {
       const chordsHtml = escapeHtml(toSpanishChordsText(mixed.chords));
       const lyricsHtml = escapeHtml(mixed.lyrics);
       if (chordsAbove) {
-        html += `<div class="chord-above-block"><div class="song-line"><span class="chord-line">${chordsHtml}</span></div><div class="song-line"><span class="lyric-line">${lyricsHtml}</span></div></div>`;
+        pushHtml(`<div class="chord-above-block"><div class="song-line"><span class="chord-line">${chordsHtml}</span></div><div class="song-line"><span class="lyric-line">${lyricsHtml}</span></div></div>`);
       } else {
-        html += `<div class="song-line mixed-line"><span class="lyric-text">${lyricsHtml}</span><span class="chord-inline">${chordsHtml}</span></div>`;
+        pushHtml(`<div class="song-line mixed-line"><span class="lyric-text">${lyricsHtml}</span><span class="chord-inline">${chordsHtml}</span></div>`);
       }
     } else {
       // Pure lyric line — already cleaned from markers
-      html += `<div class="song-line"><span class="lyric-line">${escapeHtml(cleanLine)}</span></div>`;
+      pushHtml(`<div class="song-line"><span class="lyric-line">${escapeHtml(cleanLine)}</span></div>`);
     }
   }
 
-  $songBody.innerHTML = html;
-  $songBody.className = 'song-body' + (numCols === 2 ? ' two-col' : '');
+  if (numCols === 2) {
+    // Count effective lines for auto-fit
+    let effectiveLines = 0;
+    for (const h of lineHtmls) {
+      if (h.includes('section-label')) effectiveLines += 0.7;
+      else if (h.includes('empty-line')) effectiveLines += 0.2;
+      else if (h.includes('chord-above-block')) effectiveLines += 1.8;
+      else effectiveLines += 1;
+    }
+    const linesPerCol = Math.ceil(effectiveLines / 2);
+    const hdr = document.querySelector('.song-hdr');
+    const headerH = hdr ? hdr.offsetHeight : 60;
+    const availH = window.innerHeight - headerH - 72; // 72 = song-body padding
+    const lineH = 1.7 * 16 * fontSize / 100;
+    const neededH = linesPerCol * lineH;
+    if (neededH > availH) {
+      const ratio = availH / neededH;
+      fontSize = Math.max(50, Math.round(fontSize * ratio));
+    }
+
+    // Split by effective weight so columns are balanced
+    const lineWeights = lineHtmls.map(h => {
+      if (h.includes('section-label')) return 0.7;
+      if (h.includes('empty-line')) return 0.2;
+      if (h.includes('chord-above-block')) return 1.8;
+      return 1;
+    });
+    const halfWeight = lineWeights.reduce((a, b) => a + b, 0) / 2;
+    let splitIdx = 0;
+    for (let acc = 0; splitIdx < lineWeights.length; splitIdx++) {
+      acc += lineWeights[splitIdx];
+      if (acc >= halfWeight) { splitIdx++; break; }
+    }
+    $songBody.innerHTML = '<div class="song-col">' + lineHtmls.slice(0, splitIdx).join('\n') + '</div><div class="song-col">' + lineHtmls.slice(splitIdx).join('\n') + '</div>';
+    $songBody.className = 'song-body two-col-flex';
+  } else {
+    $songBody.innerHTML = lineHtmls.join('\n');
+    $songBody.className = 'song-body';
+  }
   $songBody.style.fontSize = fontSize + '%';
   $songBody.classList.toggle('hide-chords', !showChords);
 
   // Reset scroll
   $songBody.scrollTop = 0;
+}
+
+// ── Favorites ──
+function toggleFavorite(id) {
+  id = String(id);
+  const idx = favorites.indexOf(id);
+  if (idx === -1) {
+    favorites.push(id);
+  } else {
+    favorites.splice(idx, 1);
+  }
+  localStorage.setItem('gdefe_favorites', JSON.stringify(favorites));
+  renderSongList();
+  // Update detail view star if it's the currently open song
+  if (String(id) === String(currentId)) {
+    const $favDetail = document.getElementById('btnFavoriteDetail');
+    if ($favDetail) {
+      $favDetail.textContent = favorites.includes(String(id)) ? '⭐' : '☆';
+    }
+  }
+}
+
+// ── Setlist button indicator ──
+function updateSetlistButton() {
+  if (!$btnSetlist) return;
+  if (selectedPlaylistId) {
+    const pl = getPlaylistById(selectedPlaylistId);
+    $btnSetlist.textContent = pl ? `📋 ${pl.name}` : '📋 Setlists';
+    $btnSetlist.classList.add('active');
+  } else {
+    $btnSetlist.textContent = '📋 Setlists';
+    $btnSetlist.classList.remove('active');
+  }
+}
+
+// ── Playlist Modal ──
+function renderPlaylistModal() {
+  const playlists = getAllPlaylists();
+  const selectedPl = selectedPlaylistId ? getPlaylistById(selectedPlaylistId) : null;
+
+  const listHtml = playlists.length === 0
+    ? '<p class="playlist-empty">No hay listas aún</p>'
+    : playlists.map(pl => {
+        const isSelected = pl.id === selectedPlaylistId;
+        return `
+          <div class="playlist-item" data-id="${pl.id}">
+            <div class="playlist-info">
+              <strong>${escapeHtml(pl.name)}</strong>
+              <span class="playlist-meta">${pl.date || 'Sin fecha'} · ${pl.songs.length} canciones</span>
+            </div>
+            <div class="playlist-actions">
+              <button class="playlist-select${isSelected ? ' active' : ''}" data-id="${pl.id}">${isSelected ? '✓ Seleccionado' : 'Seleccionar'}</button>
+              <button class="playlist-delete" data-id="${pl.id}" title="Eliminar setlist">🗑</button>
+            </div>
+            <div class="playlist-songs">
+              ${renderPlaylistSongs(pl)}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+  const deselectHtml = selectedPl
+    ? `<p style="font-size:.78rem;color:var(--muted);margin-bottom:10px">Seleccionado: <strong>${escapeHtml(selectedPl.name)}</strong> <button id="deselectPlaylist" class="btn btn-ghost" style="margin-left:6px;padding:3px 10px">Deseleccionar</button></p>`
+    : '';
+
+  showModal(`
+    <div class="modal-head">
+      <h3>📋 Setlists</h3>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="playlist-create">
+        <input type="text" id="plName" placeholder="Nombre del setlist" maxlength="100">
+        <input type="date" id="plDate">
+        <button class="btn btn-primary" id="plCreate">Crear</button>
+      </div>
+      ${deselectHtml}
+      <div class="playlist-list">
+        ${listHtml}
+      </div>
+    </div>
+  `);
+
+  // Set default date to today
+  const $plDate = document.getElementById('plDate');
+  if ($plDate && !$plDate.value) {
+    const today = new Date();
+    $plDate.value = today.toISOString().split('T')[0];
+  }
+
+  // Wire close
+  document.getElementById('modalClose').addEventListener('click', hideModal);
+
+  // Wire create
+  document.getElementById('plCreate').addEventListener('click', () => {
+    const name = document.getElementById('plName').value.trim();
+    const date = document.getElementById('plDate').value;
+    if (!name) { showToast('El nombre es obligatorio'); return; }
+    if (name.length > 100) { showToast('El nombre no puede exceder 100 caracteres'); return; }
+    if (!date) { showToast('La fecha es obligatoria'); return; }
+    createPlaylist({ name, date });
+    renderPlaylistModal();
+  });
+
+  // Wire select
+  document.querySelectorAll('.playlist-select').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedPlaylistId = btn.dataset.id;
+      hideModal();
+      $sidebar.classList.add('sl-mode');
+      updateSetlistButton();
+      renderSongList();
+      const pl = getPlaylistById(selectedPlaylistId);
+      showToast(`Setlist "${pl ? pl.name : ''}" seleccionado. Agrega canciones con el botón +.`);
+    });
+  });
+
+  // Wire delete
+  document.querySelectorAll('.playlist-delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const pl = getPlaylistById(id);
+      if (!pl) return;
+      if (confirm(`¿Eliminar el setlist "${pl.name}"?`)) {
+        removePlaylist(id);
+        if (selectedPlaylistId === id) {
+          selectedPlaylistId = null;
+          $sidebar.classList.remove('sl-mode');
+          renderSongList();
+        }
+        updateSetlistButton();
+        renderPlaylistModal();
+        showToast('Setlist eliminado');
+      }
+    });
+  });
+
+  // Wire deselect
+  const $deselect = document.getElementById('deselectPlaylist');
+  if ($deselect) {
+    $deselect.addEventListener('click', () => {
+      selectedPlaylistId = null;
+      hideModal();
+      updateSetlistButton();
+      renderSongList();
+    });
+  }
+
+  // Wire move
+  document.querySelectorAll('.pl-move').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const row = btn.closest('.playlist-song-row');
+      const playlistItem = btn.closest('.playlist-item');
+      const playlistId = playlistItem.dataset.id;
+      const songId = row.dataset.id;
+      const direction = btn.dataset.direction;
+      moveSongInPlaylist(playlistId, songId, direction);
+      renderPlaylistModal();
+    });
+  });
+
+  // Wire remove song
+  document.querySelectorAll('.pl-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const row = btn.closest('.playlist-song-row');
+      const playlistItem = btn.closest('.playlist-item');
+      const playlistId = playlistItem.dataset.id;
+      const songId = row.dataset.id;
+      removeSongFromPlaylist(playlistId, songId);
+      renderPlaylistModal();
+    });
+  });
+}
+
+function renderPlaylistSongs(pl) {
+  if (!pl.songs || !pl.songs.length) {
+    return '<p class="playlist-empty-sm">Sin canciones</p>';
+  }
+  return pl.songs.map((songId, idx) => {
+    const song = getById(songId);
+    const title = song ? song.title : '(Canción eliminada)';
+    const key = song ? song.key || 'C' : '';
+    return `
+      <div class="playlist-song-row" data-id="${songId}">
+        <span class="pl-song-title">${escapeHtml(title)}</span>
+        <span class="pl-song-key">${key}</span>
+        <div class="pl-song-actions">
+          <button class="pl-move" data-direction="up" ${idx === 0 ? 'disabled' : ''}>▲</button>
+          <button class="pl-move" data-direction="down" ${idx === pl.songs.length - 1 ? 'disabled' : ''}>▼</button>
+          <button class="pl-remove" title="Quitar de la lista">✕</button>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 function updateActiveSong() {
@@ -588,24 +1028,30 @@ document.getElementById('trUp').addEventListener('click', () => {
 
 document.getElementById('btnFontDown').addEventListener('click', () => {
   fontSize = Math.max(60, fontSize - 10);
+  if (numCols === 1) savedFontSize = fontSize;
   $songBody.style.fontSize = fontSize + '%';
 });
 
 document.getElementById('btnFontUp').addEventListener('click', () => {
   fontSize = Math.min(200, fontSize + 10);
+  if (numCols === 1) savedFontSize = fontSize;
   $songBody.style.fontSize = fontSize + '%';
 });
 
 document.getElementById('btnCol1').addEventListener('click', () => {
   numCols = 1;
-  $songBody.classList.remove('two-col');
+  fontSize = savedFontSize;
+  const song = getById(currentId);
+  if (song) renderLyrics(song);
   document.getElementById('btnCol1').classList.add('on');
   document.getElementById('btnCol2').classList.remove('on');
 });
 
 document.getElementById('btnCol2').addEventListener('click', () => {
   numCols = 2;
-  $songBody.classList.add('two-col');
+  savedFontSize = fontSize;
+  const song = getById(currentId);
+  if (song) renderLyrics(song);
   document.getElementById('btnCol2').classList.add('on');
   document.getElementById('btnCol1').classList.remove('on');
 });
@@ -645,49 +1091,6 @@ document.getElementById('btnNotation').addEventListener('click', () => {
 });
 
 document.getElementById('btnPrint').addEventListener('click', () => window.print());
-
-document.getElementById('btnGuitarArr')?.addEventListener('click', () => {
-  const song = getById(currentId);
-  if (!song) return;
-
-  // 1) If tab text is embedded in the song, show it
-  if (song.guitarTab) {
-    showTabModal(song);
-    return;
-  }
-
-  // 2) Try TAB_INDEX lookup (loaded from arreglos/tab-index.js)
-  if (typeof TAB_INDEX !== 'undefined') {
-    const key = song.title.toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/\(.*?\)/g, '').replace(/\[.*?\]/g, '')
-      .replace(/[^a-z\s]/g, '').trim();
-
-    // Exact match first
-    let tabText = TAB_INDEX[key];
-
-    // Partial match: find a tab key that starts with or is started by the song key
-    if (!tabText) {
-      for (const [tk, txt] of Object.entries(TAB_INDEX)) {
-        if (tk.startsWith(key) || key.startsWith(tk)) {
-          tabText = txt;
-          break;
-        }
-      }
-    }
-
-    if (tabText) {
-      song.guitarTab = tabText;
-      showTabModal(song);
-      return;
-    }
-  }
-
-  // 3) Fallback: open PDF from arreglos/canciones/
-  if (song.guitarPdf) {
-    window.open('arreglos/canciones/' + song.guitarPdf, '_blank');
-  }
-});
 
 document.getElementById('btnEditSong').addEventListener('click', () => {
   const song = getById(currentId);
@@ -887,18 +1290,6 @@ function openEditModal(song) {
           ).join('')}
         </select>
       </div>
-      <div class="frow">
-        <div class="fg">
-          <label>Arreglo guitarra (PDF)</label>
-          <input type="text" id="fGuitarPdf" value="${escapeHtml(s.guitarPdf || '')}" placeholder="ej: alaba.pdf">
-          <div class="form-help">Nombre del archivo PDF en la carpeta <code>arreglos/canciones/</code>. Ej: <code>Alaba (Atmosfera 127bpm).pdf</code></div>
-        </div>
-      </div>
-      <div class="fg">
-        <label>Tablatura</label>
-        <textarea id="fGuitarTab" rows="6" placeholder="Pega aquí la tablatura extraída del PDF...">${escapeHtml(s.guitarTab || '')}</textarea>
-        <div class="form-help">Tablatura de guitarra que se muestra al presionar el botón uñeta</div>
-      </div>
       <div class="fg">
         <label>Letra y Acordes</label>
         <textarea id="fLyrics" rows="15" placeholder="Copia aquí la letra con acordes...">${escapeHtml(s.lyrics || '')}</textarea>
@@ -919,8 +1310,6 @@ function openEditModal(song) {
       author: document.getElementById('fAuthor').value.trim(),
       genre: document.getElementById('fGender').value,
       section: document.getElementById('fSection').value,
-      guitarPdf: document.getElementById('fGuitarPdf').value.trim(),
-      guitarTab: document.getElementById('fGuitarTab').value,
       lyrics: document.getElementById('fLyrics').value
     };
     if (!data.title) { showToast('El título es obligatorio'); return; }
@@ -944,24 +1333,6 @@ function openEditModal(song) {
   document.getElementById('modalClose').addEventListener('click', hideModal);
 }
 
-// ── Tab Modal ──
-function showTabModal(song) {
-  showModal(`
-    <div class="modal-head">
-      <h3>🎸 ${escapeHtml(song.title)} — Tablatura</h3>
-      <button class="modal-close" id="modalClose">✕</button>
-    </div>
-    <div class="modal-body tab-body">
-      <pre class="tab-content">${escapeHtml(song.guitarTab)}</pre>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" id="modalCancel">Cerrar</button>
-    </div>
-  `);
-  document.getElementById('modalCancel').addEventListener('click', hideModal);
-  document.getElementById('modalClose').addEventListener('click', hideModal);
-}
-
 // ── Sidebar Add Buttons ──
 document.getElementById('btnAddSong').addEventListener('click', () => openEditModal(null));
 document.getElementById('btnAddSection').addEventListener('click', () => {
@@ -975,6 +1346,33 @@ document.getElementById('btnAddSection').addEventListener('click', () => {
     renderSongList();
     showToast(`Sección "${sec.trim()}" agregada`);
   }
+});
+
+// ── Reset Data ──
+document.getElementById('btnResetData')?.addEventListener('click', () => {
+  showModal(`
+    <div class="modal-head">
+      <h3>↻ Restaurar datos</h3>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>¿Restaurar las 211 canciones originales?</p>
+      <p style="font-size:.82rem; opacity:.7">Se perderán las canciones agregadas o editadas manualmente.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="modalCancel">Cancelar</button>
+      <button class="btn btn-danger" id="modalConfirm">Restaurar</button>
+    </div>
+  `);
+  document.getElementById('modalConfirm')?.addEventListener('click', () => {
+    localStorage.removeItem('gdefe_canciones');
+    localStorage.removeItem('gdefe_extra_sections');
+    hideModal();
+    showToast('Datos restaurados — recargando…');
+    setTimeout(() => location.reload(), 600);
+  });
+  document.getElementById('modalCancel')?.addEventListener('click', hideModal);
+  document.getElementById('modalClose')?.addEventListener('click', hideModal);
 });
 
 // ── Tuner ──
@@ -1068,4 +1466,11 @@ function renderAll() {
 }
 
 // ── Init ──
+// Load favorites from localStorage
+try {
+  const stored = localStorage.getItem('gdefe_favorites');
+  if (stored) favorites = JSON.parse(stored);
+} catch { /* fall through */ }
+
+updateSetlistButton();
 renderAll();

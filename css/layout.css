@@ -64,13 +64,22 @@ body::before {
 
 /* ── SIDEBAR ── */
 .sidebar {
-  width: 280px;
-  min-width: 280px;
+  width: 320px;
+  min-width: 320px;
   background: var(--bg);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   height: 100vh;
+  transition: width .25s ease, min-width .25s ease, border-color .25s ease;
+  overflow: hidden;
+}
+@media (min-width: 769px) {
+  .sidebar.collapsed {
+    width: 0;
+    min-width: 0;
+    border-right-color: transparent;
+  }
 }
 
 .sb-head {
@@ -88,8 +97,8 @@ body::before {
 .brand > div { flex: 1; min-width: 0; }
 
 .brand-logo {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   object-fit: contain;
   border-radius: 8px;
   background: transparent;
@@ -99,7 +108,7 @@ body::before {
 
 .brand-name {
   font-family: var(--ff-head);
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   display: flex;
@@ -151,10 +160,14 @@ body::before {
 }
 
 .sb-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 10px 16px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
+.sb-search .search-wrap { flex: 1; }
 
 /* ── SIDEBAR BODY ── */
 .sb-body {
@@ -283,11 +296,38 @@ body::before {
     left: -100%;
     width: 85vw;
     max-width: 300px;
-    height: 100%;
+    height: 100dvh;
     z-index: 100;
     transition: left 0.3s var(--ease-out);
   }
   .sidebar.open { left: 0; }
+
+  /* ── Touch targets ≥44px ── */
+  .si { padding: 10px 12px; min-height: 44px; }
+  .sl-btn { width: 36px; height: 36px; font-size: .75rem; }
+  .sl-add-btn { width: 36px; height: 36px; font-size: .9rem; }
+  .ab, .ab-sec { width: 38px; height: 36px; font-size: .75rem; }
+  .fav-filter { height: 36px; padding: 0 10px; font-size: .78rem; }
+  .fb { padding: 11px 8px; font-size: .8rem; }
+  .search-clear { width: 28px; height: 28px; font-size: .9rem; }
+  .si-add { width: 32px; height: 32px; font-size: .85rem; }
+  .vp { padding: 8px 0; font-size: .78rem; }
+
+  /* ── Font bump ── */
+  body { font-size: 15px; }
+
+  /* ── Sidebar spacing ── */
+  .sb-search { padding: 8px 10px; gap: 4px; }
+  .sb-head { padding: 12px 10px 8px; }
+  .song-list { padding-bottom: 4px; }
+  .col-head { padding: 6px 10px; }
+
+  /* ── Setlist mobile ── */
+  .sl-songs-wrap { max-height: 28vh; }
+  .sl-add-section { padding: 4px 10px 10px; }
+  .sl-back { padding: 8px 12px 6px 16px; }
+
+  /* ── Song header ── */
   .song-hdr {
     padding: 11px 14px 10px 56px;
     flex-direction: column;
@@ -296,7 +336,8 @@ body::before {
   }
   .song-hdr-r { width: 100%; }
   .song-body { padding: 14px 16px; }
-  .song-body.two-col { column-count: 1; }
+  .song-body.two-col-flex { flex-direction: column; gap: 0; }
+  .song-body.two-col-flex .song-col { flex: none; }
   .modal {
     max-width: 100%;
     border-radius: 0;
@@ -307,8 +348,21 @@ body::before {
 }
 
 @media print {
-  .sidebar, .song-hdr, .scroll-bar, .mob-btn { display: none !important; }
-  .song-body { padding: 16px !important; }
+  .sidebar, .scroll-bar, .mob-btn, .scroll-progress { display: none !important; }
+  .song-hdr {
+    border: none; padding: 0 0 8px; margin: 0;
+    background: none !important;
+    position: static;
+  }
+  .song-hdr-r { display: none !important; }
+  #songTitle {
+    font-size: 18pt;
+    color: #000 !important;
+    text-align: center;
+    margin: 0 0 8px;
+  }
+  .song-meta { display: none !important; }
+  .song-body { padding: 0 !important; }
   body { background: #fff !important; color: #000 !important; }
   .chord-line { color: #007a60 !important; }
 }

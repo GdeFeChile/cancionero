@@ -1,0 +1,12 @@
+change: mejoras-funcionalidad
+created: 2026-06-13
+status: verify-done
+phases:
+  proposal: completed
+  specs: completed
+  design: completed
+  tasks: completed
+  apply: completed
+  verify: completed
+  archive: pending
+next: proposal
