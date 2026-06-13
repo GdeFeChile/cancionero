@@ -261,9 +261,9 @@ function openSong(id) {
   // Show/hide guitar arrangement button
   const $guitarBtn = document.getElementById('btnGuitarArr');
   if ($guitarBtn) {
-    if (song.guitarPdf) {
+    if (song.guitarTab || song.guitarPdf) {
       $guitarBtn.style.display = '';
-      $guitarBtn.title = 'Ver arreglo de guitarra';
+      $guitarBtn.title = song.guitarTab ? 'Ver tablatura' : 'Ver arreglo PDF';
     } else {
       $guitarBtn.style.display = 'none';
     }
@@ -648,7 +648,10 @@ document.getElementById('btnPrint').addEventListener('click', () => window.print
 
 document.getElementById('btnGuitarArr')?.addEventListener('click', () => {
   const song = getById(currentId);
-  if (song?.guitarPdf) {
+  if (!song) return;
+  if (song.guitarTab) {
+    showTabModal(song);
+  } else if (song.guitarPdf) {
     window.open('arreglos/' + song.guitarPdf, '_blank');
   }
 });
@@ -859,6 +862,11 @@ function openEditModal(song) {
         </div>
       </div>
       <div class="fg">
+        <label>Tablatura</label>
+        <textarea id="fGuitarTab" rows="6" placeholder="Pega aquí la tablatura extraída del PDF...">${escapeHtml(s.guitarTab || '')}</textarea>
+        <div class="form-help">Tablatura de guitarra que se muestra al presionar el botón uñeta</div>
+      </div>
+      <div class="fg">
         <label>Letra y Acordes</label>
         <textarea id="fLyrics" rows="15" placeholder="Copia aquí la letra con acordes...">${escapeHtml(s.lyrics || '')}</textarea>
         <div class="form-help">Los acordes se detectan automáticamente. Usa <code>//</code> para marcar secciones.</div>
@@ -879,6 +887,7 @@ function openEditModal(song) {
       genre: document.getElementById('fGender').value,
       section: document.getElementById('fSection').value,
       guitarPdf: document.getElementById('fGuitarPdf').value.trim(),
+      guitarTab: document.getElementById('fGuitarTab').value,
       lyrics: document.getElementById('fLyrics').value
     };
     if (!data.title) { showToast('El título es obligatorio'); return; }
@@ -898,6 +907,24 @@ function openEditModal(song) {
     }
   });
 
+  document.getElementById('modalCancel').addEventListener('click', hideModal);
+  document.getElementById('modalClose').addEventListener('click', hideModal);
+}
+
+// ── Tab Modal ──
+function showTabModal(song) {
+  showModal(`
+    <div class="modal-head">
+      <h3>🎸 ${escapeHtml(song.title)} — Tablatura</h3>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body tab-body">
+      <pre class="tab-content">${escapeHtml(song.guitarTab)}</pre>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="modalCancel">Cerrar</button>
+    </div>
+  `);
   document.getElementById('modalCancel').addEventListener('click', hideModal);
   document.getElementById('modalClose').addEventListener('click', hideModal);
 }

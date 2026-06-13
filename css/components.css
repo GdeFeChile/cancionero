@@ -583,6 +583,18 @@
   animation: tIn .2s var(--ease-out); min-width: 200px;
 }
 
+/* ── Tab Modal ── */
+.tab-body { padding: 16px 22px; }
+.tab-content {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .72rem; line-height: 1.5;
+  white-space: pre-wrap; word-break: break-word;
+  color: var(--text); background: var(--panel);
+  border-radius: 8px; padding: 14px 16px;
+  margin: 0; overflow-x: auto; max-height: 60vh;
+  tab-size: 2;
+}
+
 /* ── Print fix ── */
 @media print {
   .song-body { padding: 16px !important; }
