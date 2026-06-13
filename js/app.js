@@ -25,7 +25,7 @@ let activeSection = null;
 let searchQuery = '';
 let currentId = null;
 let currentTranspose = 0;
-let fontSize = 100;
+let fontSize = 120;
 let showChords = true;
 let chordsAbove = false;
 let useSpanishNotation = false;
@@ -565,7 +565,7 @@ document.getElementById('btnFontDown').addEventListener('click', () => {
 });
 
 document.getElementById('btnFontUp').addEventListener('click', () => {
-  fontSize = Math.min(160, fontSize + 10);
+  fontSize = Math.min(200, fontSize + 10);
   $songBody.style.fontSize = fontSize + '%';
 });
 
