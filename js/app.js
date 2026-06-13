@@ -241,7 +241,7 @@ function openSong(id) {
   // Render header
   $songTitle.textContent = song.title;
   const rawKey = song.key || 'C';
-  $songMeta.textContent = (song.author ? escapeHtml(song.author) + ' · ' : '') + 'Tono: ' + displayChordKey(rawKey);
+  $songMeta.textContent = (song.author ? escapeHtml(song.author) + ' · ' : '') + 'Tono: ' + displayChordKey(rawKey) + (song.tempo ? ' · ♩ ' + song.tempo + ' bpm' : '');
   $currentKey.textContent = displayChordKey(rawKey);
 
   renderLyrics(song);
@@ -789,6 +789,10 @@ function openEditModal(song) {
             ).join('')}
           </select>
         </div>
+        <div class="fg">
+          <label>Tempo (BPM)</label>
+          <input type="number" id="fTempo" value="${s.tempo || ''}" placeholder="120" min="40" max="240">
+        </div>
       </div>
       <div class="frow">
         <div class="fg">
@@ -829,6 +833,7 @@ function openEditModal(song) {
     const data = {
       title: document.getElementById('fTitle').value.trim(),
       key: document.getElementById('fKey').value,
+      tempo: document.getElementById('fTempo').value,
       author: document.getElementById('fAuthor').value.trim(),
       genre: document.getElementById('fGender').value,
       section: document.getElementById('fSection').value,

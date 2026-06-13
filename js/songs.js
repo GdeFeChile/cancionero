@@ -66,6 +66,7 @@ function create(data) {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     title: data.title || '',
     key: data.key || 'C',
+    tempo: data.tempo || '',
     author: data.author || '',
     section: data.section || '',
     genre: data.genre || 'Neutro',
