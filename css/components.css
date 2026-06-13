@@ -46,11 +46,10 @@
   position: relative;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; border-radius: 6px;
-  will-change: transform;
 }
 .ab:not(.has) { opacity: .08; pointer-events: none; background: transparent !important; }
-.ab:hover { filter: brightness(1.15); transform: scale(1.08); box-shadow: 0 2px 10px rgba(0,0,0,.3); z-index: 2; }
-.ab.active { background: var(--accent) !important; color: #0d0d0f; box-shadow: 0 1px 4px rgba(0,0,0,.2); filter: none; transform: none; z-index: 2; }
+.ab:hover { filter: brightness(1.25); box-shadow: 0 2px 10px rgba(0,0,0,.3); z-index: 2; }
+.ab.active { background: var(--accent) !important; color: #0d0d0f; box-shadow: 0 1px 4px rgba(0,0,0,.2); filter: none; z-index: 2; }
 
 /* Muted sophisticated tones that cycle through 4 groups */
 .ab[data-l="A"]{background:#d46a7a}.ab[data-l="E"]{background:#d46a7a}.ab[data-l="I"]{background:#d46a7a}.ab[data-l="M"]{background:#d46a7a}.ab[data-l="Q"]{background:#d46a7a}.ab[data-l="U"]{background:#d46a7a}.ab[data-l="Y"]{background:#d46a7a}
@@ -70,10 +69,9 @@
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; border-radius: 6px;
   opacity: .6;
-  will-change: transform;
 }
-.ab-sec:hover { opacity: 1; color: var(--text); background: var(--panel); transform: scale(1.08); box-shadow: 0 2px 10px rgba(0,0,0,.3); z-index: 2; }
-.ab-sec.active { background: var(--accent); color: #0d0d0f; opacity: 1; box-shadow: 0 1px 4px rgba(0,0,0,.2); transform: none; z-index: 2; }
+.ab-sec:hover { opacity: 1; color: var(--text); background: var(--panel); box-shadow: 0 2px 10px rgba(0,0,0,.3); z-index: 2; }
+.ab-sec.active { background: var(--accent); color: #0d0d0f; opacity: 1; box-shadow: 0 1px 4px rgba(0,0,0,.2); z-index: 2; }
 
 /* ── Song List Items ── */
 .si {
