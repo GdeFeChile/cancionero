@@ -1,5 +1,5 @@
 html {
-  height: 100%; overflow: hidden; position: fixed; width: 100%;
+  height: 100%; overflow: hidden;
 }
 body {
   font-family: var(--ff-body);
@@ -9,8 +9,11 @@ body {
   overflow: hidden;
   font-size: 13.5px;
   -webkit-font-smoothing: antialiased;
-  position: fixed;
-  width: 100%;
+  touch-action: none;
+}
+/* Allow touch scroll inside specific containers */
+.song-list, .song-body, .sb-body, .modal-content, .alpha-col {
+  touch-action: auto;
 }
 
 ::-webkit-scrollbar {

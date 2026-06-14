@@ -1479,6 +1479,7 @@ async function handleLogin(e) {
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
+    preventDocumentScroll();
     // Then hide the login overlay — instant transition
     hideLogin();
   } else {
@@ -1488,6 +1489,16 @@ async function handleLogin(e) {
     $loginPass.value = '';
     $loginPass.focus();
   }
+}
+
+// ── Prevent document scroll on touch devices ──
+function preventDocumentScroll() {
+  document.addEventListener('touchmove', function(e) {
+    // Allow scroll inside specific scrollable elements
+    const scrollables = e.target.closest('.song-list, .song-body, .sb-body, .modal-content, .alpha-col');
+    if (scrollables) return;
+    e.preventDefault();
+  }, { passive: false });
 }
 
 // ── Init ──
@@ -1506,6 +1517,7 @@ if (checkAuth()) {
   // Render first, then hide overlay
   initApp();
   window.scrollTo(0, 0);
+  preventDocumentScroll();
   hideLogin();
 } else {
   showLogin();
