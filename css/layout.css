@@ -353,10 +353,7 @@ body::before {
     gap: 6px;
   }
   .song-hdr-r { width: 100%; gap: 3px; }
-  /* Hide less-used buttons on mobile */
-  .song-hdr-r #btnPrint,
-  .song-hdr-r #btnNotation,
-  .song-hdr-r #btnEditSong,
+  /* ◀ toggle sobra porque ya está la hamburguesa */
   .song-hdr-r #btnToggleSidebar { display: none; }
   .hdr-act { width: 34px; height: 30px; font-size: .85rem; }
 
