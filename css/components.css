@@ -254,7 +254,6 @@
 .song-hdr.hidden { display: none; }
 
 /* ── Header hide/show (mobile) ── */
-.hdr-hide { display: none; }
 .hdr-show {
   display: none;
   position: fixed;

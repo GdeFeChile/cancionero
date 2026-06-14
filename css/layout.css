@@ -293,6 +293,9 @@ body::before {
   display: block;
 }
 
+/* ── Header hide button: hidden by default (desktop) ── */
+.hdr-hide { display: none; }
+
 @media (max-width: 1024px) {
   .mob-btn { display: flex; }
   .sidebar {
