@@ -332,6 +332,20 @@ body::before {
   .sl-add-section { padding: 4px 10px 10px; }
   .sl-back { padding: 8px 12px 6px 16px; }
 
+  /* ── Landscape: back to desktop-like scale ── */
+  @media (orientation: landscape) and (max-height: 500px) {
+    body { font-size: 13px; }
+    .song-hdr { flex-direction: row; align-items: center; padding: 6px 14px 6px 46px; gap: 4px; }
+    .song-hdr-r { width: auto; gap: 2px; }
+    /* hamburger handles sidebar toggle, no need for ◀ */
+    .hdr-act { width: 32px; height: 28px; font-size: .8rem; }
+    .song-body { padding: 8px 14px; }
+    .scroll-bar { padding: 3px 12px; }
+    .scroll-tog { font-size: .6rem; padding: 3px 6px; }
+    .scroll-bar input[type=range] { width: 40px; }
+    .mob-btn { width: 34px; height: 34px; font-size: .85rem; top: 8px; left: 8px; }
+  }
+
   /* ── Song header compact ── */
   .song-hdr {
     padding: 8px 14px 8px 50px;
