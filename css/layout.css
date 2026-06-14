@@ -355,6 +355,12 @@ body::before {
   .song-hdr-r { width: 100%; gap: 3px; justify-content: flex-end; }
   /* ◀ toggle sobra porque ya está la hamburguesa */
   .song-hdr-r #btnToggleSidebar { display: none; }
+  /* Botón para ocultar header (solo móvil/tablet) */
+  .hdr-hide { display: flex; }
+  /* Botón flotante para restaurar header */
+  .hdr-show {
+    display: none;
+  }
   .hdr-act { width: 34px; height: 30px; font-size: .85rem; }
 
   /* ── Song body ── */

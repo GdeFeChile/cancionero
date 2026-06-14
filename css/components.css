@@ -250,6 +250,32 @@
   border-color: rgba(200,246,90,.25);
 }
 
+/* ── Header hidden state (mobile) ── */
+.song-hdr.hidden { display: none; }
+
+/* ── Header hide/show (mobile) ── */
+.hdr-hide { display: none; }
+.hdr-show {
+  display: none;
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  z-index: 95;
+  width: 36px; height: 36px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--muted2);
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,.3);
+  transition: opacity .2s;
+}
+.hdr-show:hover { color: var(--text); border-color: var(--muted); }
+.hdr-show.visible { display: flex; }
+
 
 /* ── Song View Fade In ── */
 #songView {

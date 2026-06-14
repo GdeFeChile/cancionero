@@ -108,6 +108,16 @@ document.getElementById('btnToggleSidebar').addEventListener('click', () => {
   btn.textContent = $sidebar.classList.contains('collapsed') ? '▶' : '◀';
 });
 
+// ── Header hide/show (mobile) ──
+document.getElementById('btnHideHdr').addEventListener('click', () => {
+  document.querySelector('.song-hdr').classList.add('hidden');
+  document.getElementById('btnShowHdr').classList.add('visible');
+});
+document.getElementById('btnShowHdr').addEventListener('click', () => {
+  document.querySelector('.song-hdr').classList.remove('hidden');
+  document.getElementById('btnShowHdr').classList.remove('visible');
+});
+
 // ── Search ──
 $searchInput.addEventListener('input', (e) => {
   const val = e.target.value;
