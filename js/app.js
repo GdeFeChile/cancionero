@@ -740,6 +740,13 @@ function renderLyrics(song) {
   }
 
   if (numCols === 2) {
+    // On phones, reduce base font for two columns to fit better
+    if (window.innerWidth <= 480) {
+      fontSize = Math.min(fontSize, 80);
+    } else if (window.innerWidth <= 600) {
+      fontSize = Math.min(fontSize, 93);
+    }
+
     // Count effective lines for auto-fit
     let effectiveLines = 0;
     for (const h of lineHtmls) {

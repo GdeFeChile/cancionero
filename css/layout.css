@@ -265,9 +265,10 @@ body::before {
 .mob-btn {
   display: none;
   position: fixed;
-  top: 14px;
-  left: 14px;
-  left: calc(14px + env(safe-area-inset-left, 0px));
+  top: 16px;
+  left: 16px;
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  left: calc(16px + env(safe-area-inset-left, 0px));
   z-index: 102;
   width: 38px;
   height: 38px;
@@ -346,7 +347,7 @@ body::before {
     .song-body { padding: 8px 14px; }
     .scroll-bar { padding: 3px 12px; }
     .scroll-tog { font-size: .6rem; padding: 3px 6px; }
-    .mob-btn { width: 34px; height: 34px; font-size: .85rem; top: 10px; left: 10px; }
+    .mob-btn { width: 34px; height: 34px; font-size: .85rem; top: calc(10px + env(safe-area-inset-top, 0px)); left: calc(10px + env(safe-area-inset-left, 0px)); }
   }
 
   /* ── Song header compact ── */
@@ -371,10 +372,6 @@ body::before {
   .song-body { padding: 12px 14px; }
   .song-body.two-col-flex { gap: 10px; }
   .song-body.two-col-flex .song-col { overflow: hidden; }
-  /* Two-columns on phones: reduce font size to fit */
-  @media (max-width: 600px) {
-    .song-body.two-col-flex { font-size: 14px; }
-  }
 
   /* ── Scroll-bar compact ── */
   .scroll-bar { padding: 5px 12px; }
