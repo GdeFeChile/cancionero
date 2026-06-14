@@ -290,6 +290,7 @@ body::before {
 
 @media (max-width: 768px) {
   .mob-btn { display: flex; }
+  .app { height: 100dvh; }
   .sidebar {
     position: fixed;
     top: 0;
@@ -327,17 +328,31 @@ body::before {
   .sl-add-section { padding: 4px 10px 10px; }
   .sl-back { padding: 8px 12px 6px 16px; }
 
-  /* ── Song header ── */
+  /* ── Song header compact ── */
   .song-hdr {
-    padding: 11px 14px 10px 56px;
+    padding: 8px 14px 8px 50px;
     flex-direction: column;
     align-items: flex-start;
-    gap: 7px;
+    gap: 6px;
   }
-  .song-hdr-r { width: 100%; }
-  .song-body { padding: 14px 16px; }
+  .song-hdr-r { width: 100%; gap: 3px; }
+  /* Hide less-used buttons on mobile */
+  .song-hdr-r #btnPrint,
+  .song-hdr-r #btnNotation,
+  .song-hdr-r #btnEditSong { display: none; }
+  .hdr-act { width: 34px; height: 30px; font-size: .85rem; }
+
+  /* ── Song body ── */
+  .song-body { padding: 12px 14px; }
   .song-body.two-col-flex { flex-direction: column; gap: 0; }
   .song-body.two-col-flex .song-col { flex: none; }
+
+  /* ── Scroll-bar compact ── */
+  .scroll-bar { padding: 4px 14px; gap: 4px; }
+  .scroll-tog { padding: 4px 8px; font-size: .65rem; }
+  .scroll-bar input[type=range] { width: 50px; }
+
+  /* ── Modal full screen ── */
   .modal {
     max-width: 100%;
     border-radius: 0;
