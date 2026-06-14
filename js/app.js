@@ -489,6 +489,12 @@ function openSong(id) {
 
   renderLyrics(song);
   updateActiveSong();
+
+  // Show/hide publish button for admin
+  const $publishBtn = document.getElementById('btnPublish');
+  if ($publishBtn) {
+    $publishBtn.style.display = isAdmin() ? '' : 'none';
+  }
 }
 
 // Spanish chord notation → English (La→A, Mi→E, Re→D, etc.)
@@ -1119,6 +1125,19 @@ document.getElementById('btnEditSong').addEventListener('click', () => {
   openEditModal(song);
 });
 
+// Publish to GitHub: copy JSON and open edit page
+document.getElementById('btnPublish').addEventListener('click', () => {
+  const song = getById(currentId);
+  if (!song) return;
+  const json = JSON.stringify(song, null, 2);
+  navigator.clipboard.writeText(json).then(() => {
+    showToast('✅ JSON copiado. Pega en user-songs.json en GitHub');
+  }).catch(() => {
+    showToast('📋 No se pudo copiar automáticamente. Selecciona el texto manualmente.', 'error');
+  });
+  window.open('https://github.com/GdeFeChile/cancionero/edit/main/user-songs.json', '_blank');
+});
+
 document.getElementById('btnDelete').addEventListener('click', () => {
   const song = getById(currentId);
   if (!song) return;
@@ -1315,7 +1334,7 @@ function openEditModal(song) {
       renderSongList();
       renderAlphaTabs();
       if (isAdmin()) {
-        showToast('💡 Usa "📋 Publicar en GitHub" en el menú de la canción para compartirla');
+        showToast('💡 Usa el botón 📋 en la canción para publicarla en GitHub');
       }
     } else {
       update(s.id, data);
