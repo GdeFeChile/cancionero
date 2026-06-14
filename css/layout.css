@@ -382,6 +382,72 @@ body::before {
   .frow { flex-direction: column; gap: 0; }
 }
 
+/* ── Touch devices (covering tablet landscape >1024px) ── */
+@media (pointer: coarse) {
+  /* Font bump for touch readability */
+  body { font-size: 15px; }
+
+  /* Hamburger for touch (sidebar slide-in) */
+  .mob-btn { display: flex; }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 85vw;
+    max-width: 300px;
+    height: 100dvh;
+    z-index: 100;
+    transition: left 0.3s var(--ease-out);
+  }
+  .sidebar.open { left: 0; }
+
+  /* Header hide button always visible on touch */
+  .hdr-hide { display: flex; }
+
+  /* Song header compact (column) on touch */
+  .song-hdr {
+    padding: 8px 14px 8px 50px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .song-hdr-r { width: 100%; gap: 3px; justify-content: flex-end; }
+  /* ◀ toggle sobra en táctil (la hamburguesa o gesture lo reemplazan) */
+  .song-hdr-r #btnToggleSidebar { display: none; }
+
+  /* Touch targets */
+  .hdr-act { width: 34px; height: 30px; font-size: .85rem; }
+  .si { padding: 10px 12px; min-height: 44px; }
+  .sl-btn { width: 36px; height: 36px; font-size: .75rem; }
+  .sl-add-btn { width: 36px; height: 36px; font-size: .9rem; }
+  .ab, .ab-sec { width: 38px; height: 36px; font-size: .75rem; }
+  .fav-filter { height: 36px; padding: 0 10px; font-size: .78rem; }
+  .fb { padding: 11px 8px; font-size: .8rem; }
+  .search-clear { width: 28px; height: 28px; font-size: .9rem; }
+  .si-add { width: 32px; height: 32px; font-size: .85rem; }
+  .vp { padding: 8px 0; font-size: .78rem; }
+
+  /* Song body compact */
+  .song-body { padding: 12px 14px; }
+  .song-body.two-col-flex { gap: 16px; }
+  .song-body.two-col-flex .song-col { overflow: hidden; }
+
+  /* Scroll-bar compact */
+  .scroll-bar { padding: 5px 12px; }
+  .scroll-tog { padding: 5px 8px; font-size: .65rem; }
+
+  /* Landscape phones: back to row header, smaller */
+  @media (orientation: landscape) and (max-height: 500px) {
+    body { font-size: 13px; }
+    .song-hdr { flex-direction: row; align-items: center; padding: 6px 14px 6px 46px; gap: 4px; }
+    .song-hdr-r { width: auto; gap: 2px; }
+    .hdr-act { width: 32px; height: 28px; font-size: .8rem; }
+    .song-body { padding: 8px 14px; }
+    .scroll-bar { padding: 3px 12px; }
+    .scroll-tog { font-size: .6rem; padding: 3px 6px; }
+  }
+}
+
 @media print {
   .sidebar, .scroll-bar, .mob-btn, .scroll-progress { display: none !important; }
   .song-hdr {
