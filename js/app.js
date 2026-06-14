@@ -1473,13 +1473,14 @@ async function handleLogin(e) {
 
   const result = login($loginUser.value, $loginPass.value);
   if (result.ok) {
-    hideLogin();
-    // Force scroll reset: iOS Safari can shift the viewport
-    // when dismissing the keyboard after login
+    // Render the app FIRST (while login overlay still covers it)
+    initApp();
+    // Force scroll reset (iOS Safari keyboard shift)
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
-    initApp();
+    // Then hide the login overlay — instant transition
+    hideLogin();
   } else {
     $loginError.textContent = result.error;
     $loginBtn.disabled = false;
@@ -1502,8 +1503,10 @@ function initApp() {
 }
 
 if (checkAuth()) {
-  hideLogin();
+  // Render first, then hide overlay
   initApp();
+  window.scrollTo(0, 0);
+  hideLogin();
 } else {
   showLogin();
 }
