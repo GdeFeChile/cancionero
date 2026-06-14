@@ -1072,6 +1072,9 @@
 }
 .login-btn:hover { background: #d4f86a; filter: brightness(1.05); }
 .login-btn:active { transform: scale(.97); }
+.login-switch { font-size: .78rem; color: var(--muted); text-align: center; margin: 0; }
+.login-switch a { color: var(--accent); text-decoration: none; cursor: pointer; }
+.login-switch a:hover { text-decoration: underline; }
 
 /* Hidden state for app after login */
 .login-overlay.hidden { display: none; }

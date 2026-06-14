@@ -41,6 +41,24 @@ export function login(username, password) {
   return { ok: true, user: username, role: user.role };
 }
 
+export function register(username, password) {
+  initUsers();
+  const users = JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
+
+  if (users[username]) return { ok: false, error: 'El usuario ya existe' };
+  if (username.length < 3) return { ok: false, error: 'El usuario debe tener al menos 3 caracteres' };
+  if (password.length < 4) return { ok: false, error: 'La contraseña debe tener al menos 4 caracteres' };
+  if (username === ADMIN_USER) return { ok: false, error: 'Ese nombre de usuario no está disponible' };
+
+  users[username] = { password: btoa(password), role: 'user' };
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
+  // Auto-login after register
+  const session = JSON.stringify({ user: username, role: 'user', expires: Date.now() + 7 * 24 * 60 * 60 * 1000 });
+  localStorage.setItem(SESSION_KEY, session);
+  return { ok: true, user: username, role: 'user' };
+}
+
 export function logout() {
   localStorage.removeItem(SESSION_KEY);
 }
@@ -53,4 +71,9 @@ export function getUser() {
     if (data.expires > Date.now()) return { user: data.user, role: data.role };
   } catch { /* ignore */ }
   return null;
+}
+
+export function isAdmin() {
+  const u = getUser();
+  return u && u.role === 'admin';
 }

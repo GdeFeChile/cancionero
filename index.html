@@ -147,6 +147,7 @@
         <img src="Imágenes/cruz.png" alt="GdeFe" class="login-icon">
         <h1>Cancionero GdeFe</h1>
       </div>
+      <!-- Login form -->
       <form class="login-form" id="loginForm">
         <div class="login-field">
           <label for="loginUser">Usuario</label>
@@ -158,6 +159,25 @@
         </div>
         <p class="login-error" id="loginError"></p>
         <button type="submit" class="login-btn" id="loginBtn">Ingresar</button>
+        <p class="login-switch">¿No tienes cuenta? <a href="#" id="showRegister">Registrarse</a></p>
+      </form>
+      <!-- Register form -->
+      <form class="login-form" id="registerForm" style="display:none">
+        <div class="login-field">
+          <label for="regUser">Nuevo usuario</label>
+          <input type="text" id="regUser" placeholder="Elige un usuario" autocomplete="off" required>
+        </div>
+        <div class="login-field">
+          <label for="regPass">Contraseña</label>
+          <input type="password" id="regPass" placeholder="Elige una contraseña" autocomplete="off" required>
+        </div>
+        <div class="login-field">
+          <label for="regPass2">Repetir contraseña</label>
+          <input type="password" id="regPass2" placeholder="Repite la contraseña" autocomplete="off" required>
+        </div>
+        <p class="login-error" id="regError"></p>
+        <button type="submit" class="login-btn" id="regBtn">Crear cuenta</button>
+        <p class="login-switch">¿Ya tienes cuenta? <a href="#" id="showLogin">Iniciar sesión</a></p>
       </form>
     </div>
   </div>

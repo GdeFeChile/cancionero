@@ -478,3 +478,18 @@ body::before {
   body { background: #fff !important; color: #000 !important; }
   .chord-line { color: #007a60 !important; }
 }
+
+/* ── User Badge (sidebar foot) ── */
+.user-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px; font-size: .7rem;
+  color: var(--muted2); flex-shrink: 0;
+  border-right: 1px solid var(--border);
+}
+.ub-name { font-weight: 600; color: var(--text); }
+.ub-role {
+  font-size: .6rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em;
+  color: var(--accent); background: var(--accent-soft);
+  padding: 1px 6px; border-radius: 4px;
+}

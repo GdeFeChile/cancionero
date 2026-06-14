@@ -2,7 +2,7 @@ import { getAll, getById, create, update, remove, getSections } from './songs.js
 import { transposeLyrics, getKeyName, NOTES } from './chords.js';
 import { startTuner, stopTuner, setOnPitchDetected, getIsRunning, renderGauge } from './tuner.js';
 import { getAll as getAllPlaylists, getById as getPlaylistById, create as createPlaylist, remove as removePlaylist, addSong as addSongToPlaylist, removeSong as removeSongFromPlaylist, moveSong as moveSongInPlaylist } from './playlists.js';
-import { checkAuth, login, logout } from './auth.js';
+import { checkAuth, login, register, logout, getUser, isAdmin } from './auth.js';
 
 // ── Chord Notation Helpers ──
 const NOTE_TO_SPANISH = { 'C':'Do', 'C#':'Do#', 'Db':'Reb', 'D':'Re', 'D#':'Re#', 'Eb':'Mib', 'E':'Mi', 'F':'Fa', 'F#':'Fa#', 'Gb':'Solb', 'G':'Sol', 'G#':'Sol#', 'Ab':'Lab', 'A':'La', 'A#':'La#', 'Bb':'Sib', 'B':'Si' };
@@ -1110,12 +1110,24 @@ document.getElementById('btnPrint').addEventListener('click', () => window.print
 document.getElementById('btnEditSong').addEventListener('click', () => {
   const song = getById(currentId);
   if (!song) return;
+  // Repo songs (numeric IDs) can only be edited by admin
+  const isRepo = /^\d+$/.test(String(song.id));
+  if (isRepo && !isAdmin()) {
+    showToast('Solo el administrador puede editar canciones del catálogo', 'error');
+    return;
+  }
   openEditModal(song);
 });
 
 document.getElementById('btnDelete').addEventListener('click', () => {
   const song = getById(currentId);
   if (!song) return;
+  // Repo songs (numeric IDs) can only be deleted by admin
+  const isRepo = /^\d+$/.test(String(song.id));
+  if (isRepo && !isAdmin()) {
+    showToast('Solo el administrador puede eliminar canciones del catálogo', 'error');
+    return;
+  }
   showModal(`
     <div class="modal-head">
       <h3>Eliminar canción</h3>
@@ -1453,16 +1465,46 @@ const $loginUser = document.getElementById('loginUser');
 const $loginPass = document.getElementById('loginPass');
 const $loginError = document.getElementById('loginError');
 const $loginBtn = document.getElementById('loginBtn');
+const $registerForm = document.getElementById('registerForm');
+const $regUser = document.getElementById('regUser');
+const $regPass = document.getElementById('regPass');
+const $regPass2 = document.getElementById('regPass2');
+const $regError = document.getElementById('regError');
+const $regBtn = document.getElementById('regBtn');
+const $showRegister = document.getElementById('showRegister');
+const $showLogin = document.getElementById('showLogin');
+
+function showLoginForm() {
+  $loginForm.style.display = '';
+  $registerForm.style.display = 'none';
+  $loginForm.addEventListener('submit', handleLogin);
+  $registerForm.removeEventListener('submit', handleRegister);
+  $loginUser.focus();
+  $loginError.textContent = '';
+}
+function showRegisterForm() {
+  $loginForm.style.display = 'none';
+  $registerForm.style.display = '';
+  $loginForm.removeEventListener('submit', handleLogin);
+  $registerForm.addEventListener('submit', handleRegister);
+  $regUser.focus();
+  $regError.textContent = '';
+}
 
 function showLogin() {
   $loginOverlay.classList.remove('hidden');
-  $loginForm.addEventListener('submit', handleLogin);
+  showLoginForm();
 }
 
 function hideLogin() {
   $loginOverlay.classList.add('hidden');
   $loginForm.removeEventListener('submit', handleLogin);
+  $registerForm.removeEventListener('submit', handleRegister);
 }
+
+// Toggle between login and register
+$showRegister.addEventListener('click', e => { e.preventDefault(); showRegisterForm(); });
+$showLogin.addEventListener('click', e => { e.preventDefault(); showLoginForm(); });
 
 async function handleLogin(e) {
   e.preventDefault();
@@ -1473,14 +1515,11 @@ async function handleLogin(e) {
 
   const result = login($loginUser.value, $loginPass.value);
   if (result.ok) {
-    // Render the app FIRST (while login overlay still covers it)
     initApp();
-    // Force scroll reset (iOS Safari keyboard shift)
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
     preventDocumentScroll();
-    // Then hide the login overlay — instant transition
     hideLogin();
   } else {
     $loginError.textContent = result.error;
@@ -1488,6 +1527,35 @@ async function handleLogin(e) {
     $loginBtn.textContent = 'Ingresar';
     $loginPass.value = '';
     $loginPass.focus();
+  }
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  if ($regPass.value !== $regPass2.value) {
+    $regError.textContent = 'Las contraseñas no coinciden';
+    return;
+  }
+  $regBtn.disabled = true;
+  $regBtn.textContent = 'Creando…';
+  $regError.textContent = '';
+  await new Promise(r => setTimeout(r, 50));
+
+  const result = register($regUser.value, $regPass.value);
+  if (result.ok) {
+    initApp();
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+    preventDocumentScroll();
+    hideLogin();
+  } else {
+    $regError.textContent = result.error;
+    $regBtn.disabled = false;
+    $regBtn.textContent = 'Crear cuenta';
+    $regPass.value = '';
+    $regPass2.value = '';
+    $regUser.focus();
   }
 }
 
@@ -1524,9 +1592,19 @@ if (checkAuth()) {
 }
 
 // ── Logout ──
-(function addLogoutBtn() {
+(function addUserUI() {
   const foot = document.querySelector('.sb-foot');
   if (!foot) return;
+  const user = getUser();
+  if (!user) return;
+
+  // User info badge
+  const badge = document.createElement('div');
+  badge.className = 'user-badge';
+  badge.innerHTML = `<span class="ub-name">${escapeHtml(user.user)}</span>${user.role === 'admin' ? '<span class="ub-role">admin</span>' : ''}`;
+  foot.prepend(badge);
+
+  // Logout button
   const btn = document.createElement('button');
   btn.className = 'fb fb-logout';
   btn.textContent = '🚪 Salir';
