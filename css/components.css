@@ -735,6 +735,7 @@
 .usr-btn-no:hover { background: var(--danger-soft); }
 .usr-token-status { font-size: .7rem; color: var(--muted); margin: 12px 0 0; text-align: center; }
 .usr-token-status code { font-size: .7rem; background: var(--panel); padding: 1px 5px; border-radius: 3px; }
+.usr-token-edit { font-size: .65rem; display: block; margin: 6px auto 0; }
 .usr-help { font-size: .75rem; color: var(--muted); margin: 8px 0; }
 .usr-help summary { cursor: pointer; color: var(--text); }
 .usr-help-steps { padding-left: 18px; margin: 6px 0 0; line-height: 1.6; }

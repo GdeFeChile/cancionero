@@ -149,8 +149,16 @@ export function getAllLocalUsers() {
 }
 
 // ── GitHub API: approve a user (commits to usuarios.json) ──
+function ghConfig() {
+  const fromLS = localStorage.getItem('gdefe_github_config');
+  if (fromLS) {
+    try { const c = JSON.parse(fromLS); if (c && c.token) return c; } catch {}
+  }
+  return window.__GITHUB_CONFIG;
+}
+
 export async function approveUserRemote(username) {
-  const cfg = window.__GITHUB_CONFIG;
+  const cfg = ghConfig();
   if (!cfg || !cfg.token) {
     return { ok: false, error: 'no_token', msg: 'No hay token de GitHub configurado. Edita usuarios.json manualmente en GitHub.' };
   }
@@ -213,7 +221,7 @@ export async function approveUserRemote(username) {
 
 // ── GitHub API: reject/remove a user (commits to usuarios.json) ──
 export async function rejectUserRemote(username) {
-  const cfg = window.__GITHUB_CONFIG;
+  const cfg = ghConfig();
   if (!cfg || !cfg.token) {
     return { ok: false, error: 'no_token', msg: 'No hay token de GitHub configurado.' };
   }

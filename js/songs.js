@@ -197,6 +197,14 @@ export async function pushLocalSongsToRemote() {
 
 // GitHub API helpers
 function getCfg() {
+  // Check localStorage first (works on GitHub Pages), then window config
+  const fromLS = localStorage.getItem('gdefe_github_config');
+  if (fromLS) {
+    try {
+      const c = JSON.parse(fromLS);
+      if (c && c.token) return c;
+    } catch {}
+  }
   const cfg = window.__GITHUB_CONFIG;
   if (!cfg || !cfg.token || !cfg.userSongsFilePath) return null;
   return cfg;

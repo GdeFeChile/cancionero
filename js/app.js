@@ -1584,7 +1584,8 @@ function preventDocumentScroll() {
 async function renderAdminUsers() {
   const pending = getPendingUsers();
   const allLocal = getAllLocalUsers();
-  const hasToken = window.__GITHUB_CONFIG && window.__GITHUB_CONFIG.token;
+  const storedToken = localStorage.getItem('gdefe_github_config');
+  const hasToken = storedToken ? true : (window.__GITHUB_CONFIG && window.__GITHUB_CONFIG.token);
 
   // Fetch fresh list from GitHub
   const approved = await fetchApprovedList(true);
@@ -1625,16 +1626,16 @@ async function renderAdminUsers() {
   }
 
   // ── Token status ──
-  html += `<p class="usr-token-status">${hasToken ? '🔑 GitHub API conectado' : '⚠️ Sin token de GitHub — edita <code>usuarios.json</code> manualmente en GitHub.com'}</p>`;
-
-  // ── Instructions ──
-  if (!hasToken) {
-    html += `<details class="usr-help"><summary>📖 ¿Cómo aprobar usuarios sin token?</summary>
+  html += `<p class="usr-token-status">${hasToken ? '🔑 GitHub API conectado' : '⚠️ Sin token de GitHub'}</p>`;
+  if (hasToken) {
+    html += `<button class="usr-btn usr-token-edit" id="btnEditToken">Cambiar token</button>`;
+  } else {
+    html += `<button class="usr-btn usr-btn-ok" id="btnSetToken">🔑 Configurar token</button>`;
+    html += `<details class="usr-help" style="margin-top:6px"><summary>📖 ¿Cómo funciona?</summary>
       <ol class="usr-help-steps">
-        <li>Agrega el nombre del usuario a <code>usuarios.json</code> en <a href="https://github.com/GdeFeChile/cancionero/blob/main/usuarios.json" target="_blank">GitHub</a></li>
-        <li>Formato: <code>"nombreusuario": "user"</code></li>
-        <li>Haz commit en la rama main</li>
-        <li>El usuario debe recargar la página con Cmd+Shift+R</li>
+        <li>Ve a <a href="https://github.com/settings/tokens?type=beta" target="_blank">GitHub tokens</a></li>
+        <li>Crea un token con permiso <strong>Contents: Read and write</strong> solo para este repo</li>
+        <li>Pégalo aquí y se guarda en tu navegador</li>
       </ol>
     </details>`;
   }
@@ -1673,6 +1674,34 @@ async function renderAdminUsers() {
       renderAdminUsers(); // re-render
     });
   });
+
+  // Token configuration
+  const setBtn = document.getElementById('btnSetToken');
+  if (setBtn) {
+    setBtn.addEventListener('click', () => {
+      const token = prompt('Pega tu GitHub Personal Access Token:');
+      if (token && token.trim()) {
+        const cfg = {
+          token: token.trim(),
+          repo: 'GdeFeChile/cancionero',
+          branch: 'main',
+          userFilePath: 'usuarios.json',
+          userSongsFilePath: 'user-songs.json'
+        };
+        localStorage.setItem('gdefe_github_config', JSON.stringify(cfg));
+        showToast('🔑 Token guardado en este navegador');
+        renderAdminUsers();
+      }
+    });
+  }
+  const editBtn = document.getElementById('btnEditToken');
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      localStorage.removeItem('gdefe_github_config');
+      showToast('Token eliminado. Recarga para aplicar cambios.');
+      renderAdminUsers();
+    });
+  }
 }
 
 // ── Init ──
