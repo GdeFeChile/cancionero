@@ -352,7 +352,7 @@ body::before {
     align-items: flex-start;
     gap: 6px;
   }
-  .song-hdr-r { width: 100%; gap: 3px; }
+  .song-hdr-r { width: 100%; gap: 3px; justify-content: flex-end; }
   /* ◀ toggle sobra porque ya está la hamburguesa */
   .song-hdr-r #btnToggleSidebar { display: none; }
   .hdr-act { width: 34px; height: 30px; font-size: .85rem; }
