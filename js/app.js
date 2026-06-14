@@ -1,4 +1,4 @@
-import { getAll, getById, create, update, remove, getSections } from './songs.js';
+import { getAll, getById, create, update, remove, getSections, syncRemoteUserSongs, pushSongToRemote, updateSongRemote, removeSongRemote } from './songs.js';
 import { transposeLyrics, getKeyName, NOTES } from './chords.js';
 import { startTuner, stopTuner, setOnPitchDetected, getIsRunning, renderGauge } from './tuner.js';
 import { getAll as getAllPlaylists, getById as getPlaylistById, create as createPlaylist, remove as removePlaylist, addSong as addSongToPlaylist, removeSong as removeSongFromPlaylist, moveSong as moveSongInPlaylist } from './playlists.js';
@@ -1142,13 +1142,15 @@ document.getElementById('btnDelete').addEventListener('click', () => {
     </div>
   `);
   document.getElementById('modalConfirm').addEventListener('click', () => {
-    remove(currentId);
+    const sid = currentId;
+    remove(sid);
     hideModal();
     currentId = null;
     $songView.style.display = 'none';
     $welcome.style.display = 'flex';
     renderSongList();
     renderAlphaTabs();
+    removeSongRemote(sid);
   });
   document.getElementById('modalCancel').addEventListener('click', hideModal);
   document.getElementById('modalClose').addEventListener('click', hideModal);
@@ -1314,11 +1316,14 @@ function openEditModal(song) {
       openSong(created.id);
       renderSongList();
       renderAlphaTabs();
+      pushSongToRemote(created);
     } else {
       update(s.id, data);
       hideModal();
       openSong(s.id);
       renderSongList();
+      renderAlphaTabs();
+      updateSongRemote({ ...s, ...data, id: s.id });
     }
   });
 
@@ -1690,6 +1695,13 @@ function initApp() {
     window.scrollTo(0, 0);
     preventDocumentScroll();
     hideLogin();
+    // Sync user songs from GitHub (only if token configured)
+    syncRemoteUserSongs().then(r => {
+      if (r.added > 0) {
+        renderAll();
+        showToast(`🔄 ${r.added} canción(es) sincronizada(s)`);
+      }
+    });
   } else {
     showLogin();
   }

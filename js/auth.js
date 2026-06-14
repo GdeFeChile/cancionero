@@ -155,7 +155,7 @@ export async function approveUserRemote(username) {
     return { ok: false, error: 'no_token', msg: 'No hay token de GitHub configurado. Edita usuarios.json manualmente en GitHub.' };
   }
 
-  const url = `https://api.github.com/repos/${cfg.repo}/contents/${cfg.filePath}`;
+  const url = `https://api.github.com/repos/${cfg.repo}/contents/${cfg.userFilePath}`;
 
   try {
     // 1. Get current file + SHA
@@ -218,7 +218,7 @@ export async function rejectUserRemote(username) {
     return { ok: false, error: 'no_token', msg: 'No hay token de GitHub configurado.' };
   }
 
-  const url = `https://api.github.com/repos/${cfg.repo}/contents/${cfg.filePath}`;
+  const url = `https://api.github.com/repos/${cfg.repo}/contents/${cfg.userFilePath}`;
 
   try {
     const getRes = await fetch(url, {
