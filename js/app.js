@@ -1474,6 +1474,11 @@ async function handleLogin(e) {
   const result = login($loginUser.value, $loginPass.value);
   if (result.ok) {
     hideLogin();
+    // Force scroll reset: iOS Safari can shift the viewport
+    // when dismissing the keyboard after login
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
     initApp();
   } else {
     $loginError.textContent = result.error;
