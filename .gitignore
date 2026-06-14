@@ -18,5 +18,5 @@ node_modules/
 .env
 .env.local
 
-# GitHub config with token (DO NOT COMMIT)
+# Local config (not committed, use github-config.js instead)
 js/config.github.js

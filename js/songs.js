@@ -197,13 +197,10 @@ export async function pushLocalSongsToRemote() {
 
 // GitHub API helpers
 function getCfg() {
-  // Check localStorage first (works on GitHub Pages), then window config
+  // Check localStorage first (for setups where token was entered via UI)
   const fromLS = localStorage.getItem('gdefe_github_config');
   if (fromLS) {
-    try {
-      const c = JSON.parse(fromLS);
-      if (c && c.token) return c;
-    } catch {}
+    try { const c = JSON.parse(fromLS); if (c && c.token) return c; } catch {}
   }
   const cfg = window.__GITHUB_CONFIG;
   if (!cfg || !cfg.token || !cfg.userSongsFilePath) return null;
@@ -294,4 +291,4 @@ export async function removeSongRemote(id) {
   }
 }
 
-export { getAll, getById, create, update, remove, getBySection, getSections, filterBySection, getAlphas };
+export { getAll, getById, create, update, remove, getBySection, getSections, filterBySection, getAlphas, getCfg };

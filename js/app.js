@@ -1,4 +1,4 @@
-import { getAll, getById, create, update, remove, getSections, syncRemoteUserSongs, pushSongToRemote, updateSongRemote, removeSongRemote, pushLocalSongsToRemote } from './songs.js';
+import { getAll, getById, create, update, remove, getSections, syncRemoteUserSongs, pushSongToRemote, updateSongRemote, removeSongRemote, pushLocalSongsToRemote, getCfg } from './songs.js';
 import { transposeLyrics, getKeyName, NOTES } from './chords.js';
 import { startTuner, stopTuner, setOnPitchDetected, getIsRunning, renderGauge } from './tuner.js';
 import { getAll as getAllPlaylists, getById as getPlaylistById, create as createPlaylist, remove as removePlaylist, addSong as addSongToPlaylist, removeSong as removeSongFromPlaylist, moveSong as moveSongInPlaylist } from './playlists.js';
@@ -1584,8 +1584,7 @@ function preventDocumentScroll() {
 async function renderAdminUsers() {
   const pending = getPendingUsers();
   const allLocal = getAllLocalUsers();
-  const storedToken = localStorage.getItem('gdefe_github_config');
-  const hasToken = storedToken ? true : (window.__GITHUB_CONFIG && window.__GITHUB_CONFIG.token);
+  const hasToken = !!(localStorage.getItem('gdefe_github_config') || (window.__GITHUB_CONFIG && window.__GITHUB_CONFIG.token));
 
   // Fetch fresh list from GitHub
   const approved = await fetchApprovedList(true);
@@ -1626,18 +1625,12 @@ async function renderAdminUsers() {
   }
 
   // ── Token status ──
-  html += `<p class="usr-token-status">${hasToken ? '🔑 GitHub API conectado' : '⚠️ Sin token de GitHub'}</p>`;
-  if (hasToken) {
-    html += `<button class="usr-btn usr-token-edit" id="btnEditToken">Cambiar token</button>`;
-  } else {
-    html += `<button class="usr-btn usr-btn-ok" id="btnSetToken">🔑 Configurar token</button>`;
-    html += `<details class="usr-help" style="margin-top:6px"><summary>📖 ¿Cómo funciona?</summary>
-      <ol class="usr-help-steps">
-        <li>Ve a <a href="https://github.com/settings/tokens?type=beta" target="_blank">GitHub tokens</a></li>
-        <li>Crea un token con permiso <strong>Contents: Read and write</strong> solo para este repo</li>
-        <li>Pégalo aquí y se guarda en tu navegador</li>
-      </ol>
-    </details>`;
+  html += `<p class="usr-token-status">${hasToken ? '🔑 Token configurado' : '⚠️ Token no configurado'}</p>`;
+  if (!hasToken) {
+    html += `<button class="usr-btn usr-btn-ok" id="btnSetToken">🔑 Configurar token</button>
+      <details class="usr-help"><summary>📖 ¿Qué es esto?</summary>
+        <p style="margin:4px 0;font-size:.75rem">El token permite que las canciones que agregues se sincronicen a todos los dispositivos. Se guarda solo en tu navegador.</p>
+      </details>`;
   }
 
   html += `<p class="usr-count">${pending.length} pendientes · ${Object.keys(approved || {}).filter(k => k !== '_comentario' && k !== '_ultima_actualizacion').length} aprobados</p>`;
@@ -1675,7 +1668,7 @@ async function renderAdminUsers() {
     });
   });
 
-  // Token configuration
+  // Token configuration button
   const setBtn = document.getElementById('btnSetToken');
   if (setBtn) {
     setBtn.addEventListener('click', () => {
@@ -1689,27 +1682,13 @@ async function renderAdminUsers() {
           userSongsFilePath: 'user-songs.json'
         };
         localStorage.setItem('gdefe_github_config', JSON.stringify(cfg));
-        showToast('🔑 Token guardado. Subiendo canciones locales…');
-        // Push local songs immediately
+        showToast('🔑 Token guardado');
+        // Immediately push local songs
         pushLocalSongsToRemote().then(r => {
-          if (r.pushed > 0) {
-            showToast(`✅ ${r.pushed} canción(es) subida(s) a GitHub`);
-          } else if (r.ok) {
-            showToast('✅ No hay canciones locales que subir');
-          } else {
-            showToast('⚠️ Error al subir: ' + (r.error || 'desconocido'), true);
-          }
-          renderAdminUsers();
+          if (r.pushed > 0) showToast(`✅ ${r.pushed} canción(es) subida(s) a GitHub`);
         });
+        renderAdminUsers();
       }
-    });
-  }
-  const editBtn = document.getElementById('btnEditToken');
-  if (editBtn) {
-    editBtn.addEventListener('click', () => {
-      localStorage.removeItem('gdefe_github_config');
-      showToast('Token eliminado. Recarga para aplicar cambios.');
-      renderAdminUsers();
     });
   }
 }
@@ -1742,7 +1721,33 @@ function initApp() {
       }
     });
     // Push local user songs to GitHub
-    pushLocalSongsToRemote();
+    pushLocalSongsToRemote().then(r => {
+      if (r.ok && r.pushed > 0) showToast(`✅ ${r.pushed} canción(es) subida(s) a GitHub`);
+    });
+    // One-time token prompt for admin
+    const adminPromptDone = localStorage.getItem('gdefe_token_prompted');
+    if (isAdmin() && !getCfg() && !adminPromptDone) {
+      localStorage.setItem('gdefe_token_prompted', '1');
+      setTimeout(() => {
+        if (confirm('¿Quieres configurar la sincronización automática de canciones?\n\nCon esto, al agregar una canción aparecerá en todos los dispositivos automáticamente.\n\n¿Tienes el token de GitHub a mano?')) {
+          const token = prompt('Pega tu GitHub Personal Access Token:');
+          if (token && token.trim()) {
+            const cfg = {
+              token: token.trim(),
+              repo: 'GdeFeChile/cancionero',
+              branch: 'main',
+              userFilePath: 'usuarios.json',
+              userSongsFilePath: 'user-songs.json'
+            };
+            localStorage.setItem('gdefe_github_config', JSON.stringify(cfg));
+            showToast('🔑 Token configurado');
+            pushLocalSongsToRemote().then(r2 => {
+              if (r2.ok && r2.pushed > 0) showToast(`✅ ${r2.pushed} canción(es) subida(s)`);
+            });
+          }
+        }
+      }, 1500);
+    }
   } else {
     showLogin();
   }
