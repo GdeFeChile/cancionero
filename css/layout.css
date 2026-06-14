@@ -59,7 +59,11 @@ body::before {
 
 .app {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+@supports not (height: 100dvh) {
+  .app { height: 100vh; }
 }
 
 /* ── SIDEBAR ── */
@@ -74,7 +78,7 @@ body::before {
   transition: width .25s ease, min-width .25s ease, border-color .25s ease;
   overflow: hidden;
 }
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
   .sidebar.collapsed {
     width: 0;
     min-width: 0;
@@ -249,6 +253,7 @@ body::before {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
 }
 
 /* Song view serves as positioning context for scroll progress bar */
@@ -288,9 +293,8 @@ body::before {
   display: block;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .mob-btn { display: flex; }
-  .app { height: 100dvh; }
   .sidebar {
     position: fixed;
     top: 0;
@@ -348,9 +352,13 @@ body::before {
   .song-body.two-col-flex .song-col { flex: none; }
 
   /* ── Scroll-bar compact ── */
-  .scroll-bar { padding: 4px 14px; gap: 4px; }
-  .scroll-tog { padding: 4px 8px; font-size: .65rem; }
-  .scroll-bar input[type=range] { width: 50px; }
+  .scroll-bar {
+    flex-shrink: 0;
+    padding: 5px 12px;
+    gap: 4px;
+  }
+  .scroll-tog { padding: 5px 8px; font-size: .65rem; }
+  .scroll-bar input[type=range] { width: 50px; min-width: 50px; }
 
   /* ── Modal full screen ── */
   .modal {
