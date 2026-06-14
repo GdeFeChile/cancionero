@@ -375,13 +375,11 @@
 
 /* ── Scroll Bar ── */
 .scroll-bar {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; justify-content: flex-end;
   padding: 6px 28px; background: var(--bg);
   border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
-.scroll-bar label { font-size: .65rem; color: var(--muted); font-weight: 500; }
-.scroll-bar input[type=range] { width: 80px; accent-color: var(--accent); }
 
 .scroll-tog {
   padding: 5px 12px; border: 1px solid var(--border);
@@ -391,7 +389,6 @@
   font-weight: 500; transition: all var(--transition-fast);
 }
 .scroll-tog:hover { color: var(--text); border-color: var(--border2); background: var(--panel); }
-.scroll-tog.on { background: var(--accent-soft); border-color: rgba(200,246,90,.2); color: var(--accent); }
 .scroll-tog--danger { color: var(--danger); }
 .scroll-tog--danger:hover { border-color: var(--danger); background: var(--danger-soft); }
 

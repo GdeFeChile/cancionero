@@ -32,9 +32,7 @@ let showChords = true;
 let chordsAbove = false;
 let useSpanishNotation = false;
 let numCols = 1;
-let isScrolling = false;
-let scrollRaf = null;
-let scrollSpeed = 3;
+
 let currentView = 'songs';
 let searchTimer;
 
@@ -96,7 +94,6 @@ function showView(view) {
     $welcome.style.display = 'none';
     $songView.style.display = 'none';
     $tunerView.classList.add('active');
-    stopAutoScroll();
   }
 }
 
@@ -1185,40 +1182,6 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ── Auto-scroll ──
-document.getElementById('scrollBtn').addEventListener('click', () => {
-  isScrolling = !isScrolling;
-  const btn = document.getElementById('scrollBtn');
-  if (isScrolling) {
-    btn.textContent = '⏸ Auto-scroll';
-    btn.classList.add('on');
-    startAutoScroll();
-  } else {
-    btn.textContent = '▶ Auto-scroll';
-    btn.classList.remove('on');
-    stopAutoScroll();
-  }
-});
-
-document.getElementById('scrollSpeed').addEventListener('input', (e) => {
-  scrollSpeed = parseFloat(e.target.value);
-});
-
-function startAutoScroll() {
-  function frame() {
-    if (!isScrolling) return;
-    $songBody.scrollTop += 0.4 * scrollSpeed;
-    scrollRaf = requestAnimationFrame(frame);
-  }
-  scrollRaf = requestAnimationFrame(frame);
-}
-
-function stopAutoScroll() {
-  if (scrollRaf) {
-    cancelAnimationFrame(scrollRaf);
-    scrollRaf = null;
-  }
-}
-
 // ── Modal ──
 function showModal(html) {
   const overlay = document.getElementById('modalOverlay');

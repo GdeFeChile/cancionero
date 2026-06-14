@@ -342,7 +342,6 @@ body::before {
     .song-body { padding: 8px 14px; }
     .scroll-bar { padding: 3px 12px; }
     .scroll-tog { font-size: .6rem; padding: 3px 6px; }
-    .scroll-bar input[type=range] { width: 40px; }
     .mob-btn { width: 34px; height: 34px; font-size: .85rem; top: 8px; left: 8px; }
   }
 
@@ -367,13 +366,8 @@ body::before {
   .song-body.two-col-flex .song-col { flex: none; }
 
   /* ── Scroll-bar compact ── */
-  .scroll-bar {
-    flex-shrink: 0;
-    padding: 5px 12px;
-    gap: 4px;
-  }
+  .scroll-bar { padding: 5px 12px; }
   .scroll-tog { padding: 5px 8px; font-size: .65rem; }
-  .scroll-bar input[type=range] { width: 50px; min-width: 50px; }
 
   /* ── Modal full screen ── */
   .modal {
