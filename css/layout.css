@@ -365,8 +365,8 @@ body::before {
 
   /* ── Song body ── */
   .song-body { padding: 12px 14px; }
-  .song-body.two-col-flex { flex-direction: column; gap: 0; }
-  .song-body.two-col-flex .song-col { flex: none; }
+  .song-body.two-col-flex { gap: 16px; }
+  .song-body.two-col-flex .song-col { overflow: hidden; }
 
   /* ── Scroll-bar compact ── */
   .scroll-bar { padding: 5px 12px; }
