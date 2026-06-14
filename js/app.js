@@ -1604,6 +1604,32 @@ if (checkAuth()) {
   badge.innerHTML = `<span class="ub-name">${escapeHtml(user.user)}</span>${user.role === 'admin' ? '<span class="ub-role">admin</span>' : ''}`;
   foot.prepend(badge);
 
+  // Admin: button to list users
+  if (user.role === 'admin') {
+    const usersBtn = document.createElement('button');
+    usersBtn.className = 'fb fb-users';
+    usersBtn.textContent = '👥';
+    usersBtn.title = 'Ver usuarios registrados';
+    usersBtn.addEventListener('click', () => {
+      const users = JSON.parse(localStorage.getItem('gdefe_users') || '{}');
+      const list = Object.entries(users)
+        .map(([name, data]) =>
+          `<div class="usr-row"><span class="usr-name">${escapeHtml(name)}</span><span class="usr-role-tag ${data.role === 'admin' ? 'usr-admin' : ''}">${data.role}</span></div>`
+        ).join('');
+      showModal(`
+        <div class="modal-head">
+          <h3>Usuarios registrados</h3>
+          <button class="modal-close" id="modalClose">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="usr-list">${list || '<p class="usr-empty">No hay usuarios registrados</p>'}</div>
+        </div>
+      `);
+      document.getElementById('modalClose')?.addEventListener('click', hideModal);
+    });
+    foot.insertBefore(usersBtn, foot.lastElementChild);
+  }
+
   // Logout button
   const btn = document.createElement('button');
   btn.className = 'fb fb-logout';

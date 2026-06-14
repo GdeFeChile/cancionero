@@ -713,6 +713,16 @@
 .fb-setlist.active { color: var(--accent); background: var(--accent-soft); }
 .fb-logout { color: var(--danger); font-size: .72rem; }
 .fb-logout:hover { background: var(--danger-soft); color: var(--danger); }
+.fb-users { color: var(--muted2); font-size: .8rem; }
+.fb-users:hover { background: var(--panel); color: var(--text); }
+
+/* ── User list modal ── */
+.usr-list { display: flex; flex-direction: column; gap: 4px; }
+.usr-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; border-radius: 6px; background: var(--panel); }
+.usr-name { font-weight: 600; font-size: .85rem; }
+.usr-role-tag { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 2px 7px; border-radius: 4px; background: var(--bg); color: var(--muted); }
+.usr-role-tag.usr-admin { background: var(--accent-soft); color: var(--accent); }
+.usr-empty { color: var(--muted); text-align: center; font-size: .85rem; }
 
 /* ── Song List Add Button ── */
 .si-add {
