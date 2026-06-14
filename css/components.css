@@ -308,7 +308,7 @@
 .song-body::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,.25); }
 .song-body.two-col-flex {
   display: flex;
-  gap: 36px;
+  gap: 24px;
   padding-right: 6px;
 }
 .song-body.two-col-flex .song-col {
