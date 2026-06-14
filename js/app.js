@@ -1,4 +1,4 @@
-import { getAll, getById, create, update, remove, getSections, syncRemoteUserSongs, pushSongToRemote, updateSongRemote, removeSongRemote } from './songs.js';
+import { getAll, getById, create, update, remove, getSections, syncRemoteUserSongs, pushSongToRemote, updateSongRemote, removeSongRemote, pushLocalSongsToRemote } from './songs.js';
 import { transposeLyrics, getKeyName, NOTES } from './chords.js';
 import { startTuner, stopTuner, setOnPitchDetected, getIsRunning, renderGauge } from './tuner.js';
 import { getAll as getAllPlaylists, getById as getPlaylistById, create as createPlaylist, remove as removePlaylist, addSong as addSongToPlaylist, removeSong as removeSongFromPlaylist, moveSong as moveSongInPlaylist } from './playlists.js';
@@ -1702,6 +1702,8 @@ function initApp() {
         showToast(`🔄 ${r.added} canción(es) sincronizada(s)`);
       }
     });
+    // Push local user songs to GitHub
+    pushLocalSongsToRemote();
   } else {
     showLogin();
   }

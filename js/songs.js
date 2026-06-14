@@ -169,6 +169,32 @@ export async function syncRemoteUserSongs() {
   return { added, total: remote.length };
 }
 
+// Push locally-created songs (non-numeric IDs) that aren't yet in remote
+export async function pushLocalSongsToRemote() {
+  const cfg = getCfg();
+  if (!cfg) return { ok: false, error: 'no_token', pushed: 0 };
+
+  const local = getAll().filter(s => !/^\d+$/.test(String(s.id)));
+  if (!local.length) return { ok: true, pushed: 0 };
+
+  const remote = await fetchRemoteUserSongs(true);
+  const remoteIds = new Set(remote.map(s => s.id));
+  const toPush = local.filter(s => !remoteIds.has(s.id));
+  if (!toPush.length) return { ok: true, pushed: 0 };
+
+  try {
+    const file = await ghGetFile(cfg);
+    const current = JSON.parse(atob(file.content));
+    for (const s of toPush) current.push(s);
+    const content = btoa(JSON.stringify(current, null, 2));
+    await ghPutFile(cfg, file.sha, content, `Sincronizar ${toPush.length} canción(es) local(es)`);
+    _remoteSongsCache = null;
+    return { ok: true, pushed: toPush.length };
+  } catch (e) {
+    return { ok: false, error: e.message, pushed: 0 };
+  }
+}
+
 // GitHub API helpers
 function getCfg() {
   const cfg = window.__GITHUB_CONFIG;
