@@ -14,6 +14,8 @@
   --sec-color: #c8a96e;
   --danger: #e85050;
   --danger-soft: rgba(232,80,80,.08);
+  --warning: #f0c040;
+  --warning-soft: rgba(240,192,64,.1);
   --shadow-sm: 0 1px 2px rgba(0,0,0,.25);
   --shadow-md: 0 4px 10px rgba(0,0,0,.35);
   --shadow-lg: 0 8px 24px rgba(0,0,0,.45);

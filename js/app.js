@@ -2,7 +2,7 @@ import { getAll, getById, create, update, remove, getSections } from './songs.js
 import { transposeLyrics, getKeyName, NOTES } from './chords.js';
 import { startTuner, stopTuner, setOnPitchDetected, getIsRunning, renderGauge } from './tuner.js';
 import { getAll as getAllPlaylists, getById as getPlaylistById, create as createPlaylist, remove as removePlaylist, addSong as addSongToPlaylist, removeSong as removeSongFromPlaylist, moveSong as moveSongInPlaylist } from './playlists.js';
-import { checkAuth, login, register, logout, getUser, isAdmin } from './auth.js';
+import { checkAuth, login, register, logout, getUser, isAdmin, fetchApprovedList, validateSession, getPendingUsers, getAllLocalUsers, approveUserRemote, rejectUserRemote } from './auth.js';
 
 // ── Chord Notation Helpers ──
 const NOTE_TO_SPANISH = { 'C':'Do', 'C#':'Do#', 'Db':'Reb', 'D':'Re', 'D#':'Re#', 'Eb':'Mib', 'E':'Mi', 'F':'Fa', 'F#':'Fa#', 'Gb':'Solb', 'G':'Sol', 'G#':'Sol#', 'Ab':'Lab', 'A':'La', 'A#':'La#', 'Bb':'Sib', 'B':'Si' };
@@ -1443,12 +1443,12 @@ window.addEventListener('resize', () => {
 });
 
 // ── Toast ──
-function showToast(message, type) {
+function showToast(message, isError) {
   const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = message;
+  toast.className = 'toast' + (isError ? ' toast-error' : '');
+  toast.innerHTML = message;
   document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 2800);
+  setTimeout(() => toast.remove(), 3500);
 }
 window.showToast = showToast;
 
@@ -1513,7 +1513,7 @@ async function handleLogin(e) {
   $loginError.textContent = '';
   await new Promise(r => setTimeout(r, 50)); // let UI breathe
 
-  const result = login($loginUser.value, $loginPass.value);
+  const result = await login($loginUser.value, $loginPass.value);
   if (result.ok) {
     initApp();
     window.scrollTo(0, 0);
@@ -1521,6 +1521,10 @@ async function handleLogin(e) {
     document.documentElement.scrollTop = 0;
     preventDocumentScroll();
     hideLogin();
+  } else if (result.error === 'pending_approval') {
+    $loginError.innerHTML = '⚠️ Tu cuenta está <strong>pendiente de aprobación</strong>. Contacta al administrador para activarla.';
+    $loginBtn.disabled = false;
+    $loginBtn.textContent = 'Ingresar';
   } else {
     $loginError.textContent = result.error;
     $loginBtn.disabled = false;
@@ -1543,12 +1547,14 @@ async function handleRegister(e) {
 
   const result = register($regUser.value, $regPass.value);
   if (result.ok) {
-    initApp();
-    window.scrollTo(0, 0);
-    document.body.scrollTop = 0;
-    document.documentElement.scrollTop = 0;
-    preventDocumentScroll();
-    hideLogin();
+    // Registration complete — show pending message, don't auto-login
+    showLoginForm();
+    $loginError.innerHTML = '✅ <strong>Registro exitoso.</strong> Tu cuenta está pendiente de aprobación. Un administrador la activará pronto.';
+    $regBtn.disabled = false;
+    $regBtn.textContent = 'Crear cuenta';
+    $regUser.value = '';
+    $regPass.value = '';
+    $regPass2.value = '';
   } else {
     $regError.textContent = result.error;
     $regBtn.disabled = false;
@@ -1569,6 +1575,101 @@ function preventDocumentScroll() {
   }, { passive: false });
 }
 
+// ── Admin: user management panel ──
+async function renderAdminUsers() {
+  const pending = getPendingUsers();
+  const allLocal = getAllLocalUsers();
+  const hasToken = window.__GITHUB_CONFIG && window.__GITHUB_CONFIG.token;
+
+  // Fetch fresh list from GitHub
+  const approved = await fetchApprovedList(true);
+
+  // Build: approved + pending sections
+  let html = `<div class="modal-head"><h3>Usuarios registrados</h3><button class="modal-close" id="modalClose">✕</button></div><div class="modal-body">`;
+
+  // ── Pending section ──
+  if (pending.length) {
+    html += `<h4 class="usr-section-title">⏳ Pendientes de aprobación</h4><div class="usr-list">`;
+    for (const name of pending) {
+      html += `<div class="usr-row">
+        <span class="usr-name">${escapeHtml(name)}</span>
+        <span class="usr-role-tag usr-pending">pendiente</span>
+        <div class="usr-actions">
+          <button class="usr-btn usr-btn-ok" data-action="approve" data-user="${escapeHtml(name)}">✓ Aprobar</button>
+          <button class="usr-btn usr-btn-no" data-action="reject" data-user="${escapeHtml(name)}">✕ Rechazar</button>
+        </div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  // ── Approved section (from GitHub) ──
+  if (approved) {
+    const list = Object.entries(approved).filter(([k]) => k !== '_comentario' && k !== '_ultima_actualizacion');
+    if (list.length) {
+      html += `<h4 class="usr-section-title">✓ Usuarios aprobados</h4><div class="usr-list">`;
+      for (const [name, role] of list) {
+        html += `<div class="usr-row">
+          <span class="usr-name">${escapeHtml(name)}</span>
+          <span class="usr-role-tag ${role === 'admin' ? 'usr-admin' : ''}">${role}</span>
+          ${name !== 'admin' ? `<div class="usr-actions"><button class="usr-btn usr-btn-no" data-action="reject" data-user="${escapeHtml(name)}">✕ Quitar</button></div>` : ''}
+        </div>`;
+      }
+      html += `</div>`;
+    }
+  }
+
+  // ── Token status ──
+  html += `<p class="usr-token-status">${hasToken ? '🔑 GitHub API conectado' : '⚠️ Sin token de GitHub — edita <code>usuarios.json</code> manualmente en GitHub.com'}</p>`;
+
+  // ── Instructions ──
+  if (!hasToken) {
+    html += `<details class="usr-help"><summary>📖 ¿Cómo aprobar usuarios sin token?</summary>
+      <ol class="usr-help-steps">
+        <li>Agrega el nombre del usuario a <code>usuarios.json</code> en <a href="https://github.com/GdeFeChile/cancionero/blob/main/usuarios.json" target="_blank">GitHub</a></li>
+        <li>Formato: <code>"nombreusuario": "user"</code></li>
+        <li>Haz commit en la rama main</li>
+        <li>El usuario debe recargar la página con Cmd+Shift+R</li>
+      </ol>
+    </details>`;
+  }
+
+  html += `<p class="usr-count">${pending.length} pendientes · ${Object.keys(approved || {}).filter(k => k !== '_comentario' && k !== '_ultima_actualizacion').length} aprobados</p>`;
+  html += '</div>';
+
+  showModal(html);
+  document.getElementById('modalClose')?.addEventListener('click', hideModal);
+
+  // Attach action buttons
+  document.querySelectorAll('[data-action="approve"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const username = btn.dataset.user;
+      btn.disabled = true;
+      btn.textContent = 'Aprobando…';
+      const result = await approveUserRemote(username);
+      if (result.ok) {
+        showToast(result.msg);
+        renderAdminUsers(); // re-render
+      } else {
+        showToast(result.msg, true);
+        btn.disabled = false;
+        btn.textContent = '✓ Aprobar';
+      }
+    });
+  });
+  document.querySelectorAll('[data-action="reject"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const username = btn.dataset.user;
+      if (!confirm(`¿Rechazar/eliminar a "${username}"?`)) return;
+      btn.disabled = true;
+      btn.textContent = 'Eliminando…';
+      const result = await rejectUserRemote(username);
+      showToast(result.msg, !result.ok);
+      renderAdminUsers(); // re-render
+    });
+  });
+}
+
 // ── Init ──
 function initApp() {
   // Load favorites from localStorage
@@ -1581,15 +1682,20 @@ function initApp() {
   renderAll();
 }
 
-if (checkAuth()) {
-  // Render first, then hide overlay
-  initApp();
-  window.scrollTo(0, 0);
-  preventDocumentScroll();
-  hideLogin();
-} else {
-  showLogin();
-}
+(async function init() {
+  await fetchApprovedList();
+  validateSession();
+  if (checkAuth()) {
+    initApp();
+    window.scrollTo(0, 0);
+    preventDocumentScroll();
+    hideLogin();
+  } else {
+    showLogin();
+  }
+  // Show login form by default (register hidden)
+  showLoginForm();
+})();
 
 // ── Logout ──
 (function addUserUI() {
@@ -1604,29 +1710,13 @@ if (checkAuth()) {
   badge.innerHTML = `<span class="ub-name">${escapeHtml(user.user)}</span>${user.role === 'admin' ? '<span class="ub-role">admin</span>' : ''}`;
   foot.prepend(badge);
 
-  // Admin: button to list users
+  // Admin: panel de usuarios con aprobación
   if (user.role === 'admin') {
     const usersBtn = document.createElement('button');
     usersBtn.className = 'fb fb-users';
     usersBtn.textContent = '👥';
-    usersBtn.title = 'Ver usuarios registrados';
-    usersBtn.addEventListener('click', () => {
-      const users = JSON.parse(localStorage.getItem('gdefe_users') || '{}');
-      const list = Object.entries(users)
-        .map(([name, data]) =>
-          `<div class="usr-row"><span class="usr-name">${escapeHtml(name)}</span><span class="usr-role-tag ${data.role === 'admin' ? 'usr-admin' : ''}">${data.role}</span></div>`
-        ).join('');
-      showModal(`
-        <div class="modal-head">
-          <h3>Usuarios registrados</h3>
-          <button class="modal-close" id="modalClose">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="usr-list">${list || '<p class="usr-empty">No hay usuarios registrados</p>'}</div>
-        </div>
-      `);
-      document.getElementById('modalClose')?.addEventListener('click', hideModal);
-    });
+    usersBtn.title = 'Gestionar usuarios';
+    usersBtn.addEventListener('click', renderAdminUsers);
     foot.insertBefore(usersBtn, foot.lastElementChild);
   }
 

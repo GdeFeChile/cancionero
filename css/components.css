@@ -722,7 +722,25 @@
 .usr-name { font-weight: 600; font-size: .85rem; }
 .usr-role-tag { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 2px 7px; border-radius: 4px; background: var(--bg); color: var(--muted); }
 .usr-role-tag.usr-admin { background: var(--accent-soft); color: var(--accent); }
+.usr-role-tag.usr-pending { background: var(--warning-soft, #3a3410); color: var(--warning, #f0c040); }
 .usr-empty { color: var(--muted); text-align: center; font-size: .85rem; }
+.usr-section-title { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 0 6px; }
+.usr-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.usr-btn { font-size: .65rem; font-weight: 600; padding: 3px 8px; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--text); cursor: pointer; white-space: nowrap; }
+.usr-btn:hover { background: var(--panel); }
+.usr-btn:disabled { opacity: .5; cursor: default; }
+.usr-btn-ok { color: var(--accent); }
+.usr-btn-ok:hover { background: var(--accent-soft); }
+.usr-btn-no { color: var(--danger); }
+.usr-btn-no:hover { background: var(--danger-soft); }
+.usr-token-status { font-size: .7rem; color: var(--muted); margin: 12px 0 0; text-align: center; }
+.usr-token-status code { font-size: .7rem; background: var(--panel); padding: 1px 5px; border-radius: 3px; }
+.usr-help { font-size: .75rem; color: var(--muted); margin: 8px 0; }
+.usr-help summary { cursor: pointer; color: var(--text); }
+.usr-help-steps { padding-left: 18px; margin: 6px 0 0; line-height: 1.6; }
+.usr-help-steps a { color: var(--accent); }
+.usr-count { font-size: .7rem; color: var(--muted2); text-align: center; margin: 10px 0 0; }
+.toast-error { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger); }
 
 /* ── Song List Add Button ── */
 .si-add {
