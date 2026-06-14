@@ -1689,8 +1689,18 @@ async function renderAdminUsers() {
           userSongsFilePath: 'user-songs.json'
         };
         localStorage.setItem('gdefe_github_config', JSON.stringify(cfg));
-        showToast('🔑 Token guardado en este navegador');
-        renderAdminUsers();
+        showToast('🔑 Token guardado. Subiendo canciones locales…');
+        // Push local songs immediately
+        pushLocalSongsToRemote().then(r => {
+          if (r.pushed > 0) {
+            showToast(`✅ ${r.pushed} canción(es) subida(s) a GitHub`);
+          } else if (r.ok) {
+            showToast('✅ No hay canciones locales que subir');
+          } else {
+            showToast('⚠️ Error al subir: ' + (r.error || 'desconocido'), true);
+          }
+          renderAdminUsers();
+        });
       }
     });
   }
