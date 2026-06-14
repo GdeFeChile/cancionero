@@ -2,6 +2,7 @@ import { getAll, getById, create, update, remove, getSections } from './songs.js
 import { transposeLyrics, getKeyName, NOTES } from './chords.js';
 import { startTuner, stopTuner, setOnPitchDetected, getIsRunning, renderGauge } from './tuner.js';
 import { getAll as getAllPlaylists, getById as getPlaylistById, create as createPlaylist, remove as removePlaylist, addSong as addSongToPlaylist, removeSong as removeSongFromPlaylist, moveSong as moveSongInPlaylist } from './playlists.js';
+import { checkAuth, login, logout } from './auth.js';
 
 // ── Chord Notation Helpers ──
 const NOTE_TO_SPANISH = { 'C':'Do', 'C#':'Do#', 'Db':'Reb', 'D':'Re', 'D#':'Re#', 'Eb':'Mib', 'E':'Mi', 'F':'Fa', 'F#':'Fa#', 'Gb':'Solb', 'G':'Sol', 'G#':'Sol#', 'Ab':'Lab', 'A':'La', 'A#':'La#', 'Bb':'Sib', 'B':'Si' };
@@ -1438,12 +1439,73 @@ function renderAll() {
   renderSongList();
 }
 
-// ── Init ──
-// Load favorites from localStorage
-try {
-  const stored = localStorage.getItem('gdefe_favorites');
-  if (stored) favorites = JSON.parse(stored);
-} catch { /* fall through */ }
+// ── Auth ──
+const $loginOverlay = document.getElementById('loginOverlay');
+const $loginForm = document.getElementById('loginForm');
+const $loginUser = document.getElementById('loginUser');
+const $loginPass = document.getElementById('loginPass');
+const $loginError = document.getElementById('loginError');
+const $loginBtn = document.getElementById('loginBtn');
 
-updateSetlistButton();
-renderAll();
+function showLogin() {
+  $loginOverlay.classList.remove('hidden');
+  $loginForm.addEventListener('submit', handleLogin);
+}
+
+function hideLogin() {
+  $loginOverlay.classList.add('hidden');
+  $loginForm.removeEventListener('submit', handleLogin);
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  $loginBtn.disabled = true;
+  $loginBtn.textContent = 'Ingresando…';
+  $loginError.textContent = '';
+  await new Promise(r => setTimeout(r, 50)); // let UI breathe
+
+  const result = login($loginUser.value, $loginPass.value);
+  if (result.ok) {
+    hideLogin();
+    initApp();
+  } else {
+    $loginError.textContent = result.error;
+    $loginBtn.disabled = false;
+    $loginBtn.textContent = 'Ingresar';
+    $loginPass.value = '';
+    $loginPass.focus();
+  }
+}
+
+// ── Init ──
+function initApp() {
+  // Load favorites from localStorage
+  try {
+    const stored = localStorage.getItem('gdefe_favorites');
+    if (stored) favorites = JSON.parse(stored);
+  } catch { /* fall through */ }
+
+  updateSetlistButton();
+  renderAll();
+}
+
+if (checkAuth()) {
+  hideLogin();
+  initApp();
+} else {
+  showLogin();
+}
+
+// ── Logout ──
+(function addLogoutBtn() {
+  const foot = document.querySelector('.sb-foot');
+  if (!foot) return;
+  const btn = document.createElement('button');
+  btn.className = 'fb fb-logout';
+  btn.textContent = '🚪 Salir';
+  btn.addEventListener('click', () => {
+    logout();
+    location.reload();
+  });
+  foot.appendChild(btn);
+})();

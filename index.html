@@ -140,6 +140,28 @@
     </div>
   </div>
 
+  <!-- ── Login Overlay ── -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+      <div class="login-logo">
+        <img src="Imágenes/cruz.png" alt="GdeFe" class="login-icon">
+        <h1>Cancionero GdeFe</h1>
+      </div>
+      <form class="login-form" id="loginForm">
+        <div class="login-field">
+          <label for="loginUser">Usuario</label>
+          <input type="text" id="loginUser" placeholder="Usuario" autocomplete="username" required>
+        </div>
+        <div class="login-field">
+          <label for="loginPass">Contraseña</label>
+          <input type="password" id="loginPass" placeholder="Contraseña" autocomplete="current-password" required>
+        </div>
+        <p class="login-error" id="loginError"></p>
+        <button type="submit" class="login-btn" id="loginBtn">Ingresar</button>
+      </form>
+    </div>
+  </div>
+
   <div class="overlay" id="modalOverlay">
     <div class="modal" id="modalContent"></div>
   </div>
