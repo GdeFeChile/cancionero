@@ -1,13 +1,16 @@
-import DEFAULT_SONGS from './songs-data.js';
+// ── Songs Module (Supabase + localStorage cache) ──
+
+import { db } from './supabase-client.js';
 import { detectKey } from './chords.js';
 
-const DEFAULT_SECTIONS = [
-  'Cuecas',
-  'Canciones en inglés',
-  'Villancicos'
-];
 const STORAGE_KEY = 'gdefe_canciones';
+const DEFAULT_SECTIONS = ['Cuecas', 'Canciones en inglés', 'Villancicos'];
 
+// ── In-memory cache ──
+let _songsCache = [];
+let _cacheLoaded = false;
+
+// ── Normalization ──
 function normalizeGenre(g) {
   if (!g || g === 'Neutro') return 'Neutro';
   const lc = g.toLowerCase();
@@ -18,52 +21,92 @@ function normalizeGenre(g) {
 
 function normalizeSong(s) {
   return {
-    ...s,
-    genre: normalizeGenre(s.genre)
+    id: s.id,
+    title: s.title || '',
+    key: s.key || 'C',
+    tempo: s.tempo || '',
+    author: s.author || '',
+    section: s.section || '',
+    genre: normalizeGenre(s.genre),
+    lyrics: s.lyrics || '',
+    createdAt: s.created_at || s.createdAt || '',
+    updatedAt: s.updated_at || s.updatedAt || '',
+    owner_email: s.owner_email || '',
+    is_catalog: s.is_catalog || false
   };
 }
 
-function getAll() {
+// ── Local cache helpers ──
+function saveLocalCache(songs) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
+  } catch { /* quota exceeded */ }
+}
+
+function loadLocalCache() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const songs = JSON.parse(stored).map(normalizeSong);
-      // Detect missing keys
-      let changed = false;
-      for (const song of songs) {
-        if (!song.key) {
-          song.key = detectKey(song.lyrics);
-          changed = true;
-        }
-      }
-      if (changed) saveAll(songs);
-      return songs;
-    }
+    if (stored) return JSON.parse(stored).map(normalizeSong);
   } catch { /* fall through */ }
-  // First load: inject default songs
-  const data = DEFAULT_SONGS.map(s => ({
-    ...normalizeSong(s),
-    key: s.key || detectKey(s.lyrics),
-    createdAt: s.createdAt || new Date().toISOString(),
-    updatedAt: s.updatedAt || new Date().toISOString()
-  }));
-  saveAll(data);
-  return data;
+  return null;
 }
 
-function saveAll(songs) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
+// ══════════════════════════════════════════
+//  PUBLIC API
+// ══════════════════════════════════════════
+
+// ── Load all songs from Supabase (call once on init) ──
+export async function loadAll() {
+  try {
+    const { data, error } = await db.select('canciones', { order: 'title' });
+    if (!error && data && data.length > 0) {
+      _songsCache = data.map(normalizeSong);
+      _cacheLoaded = true;
+      saveLocalCache(_songsCache);
+      return _songsCache;
+    }
+  } catch (e) {
+    console.warn('Supabase load falló:', e.message);
+  }
+
+  // Fallback: try local cache
+  const local = loadLocalCache();
+  if (local && local.length > 0) {
+    _songsCache = local;
+    _cacheLoaded = true;
+    return local;
+  }
+
+  return _songsCache;
 }
 
-function getById(id) {
-  const sid = String(id);
-  return getAll().find(s => String(s.id) === sid) || null;
+// ── Get all songs (sync — uses cache) ──
+export function getAll() {
+  if (!_cacheLoaded) {
+    // Fast path: try local cache synchronously
+    const local = loadLocalCache();
+    if (local) {
+      _songsCache = local;
+      _cacheLoaded = true;
+      // Kick off async refresh in background
+      loadAll().catch(() => {});
+    }
+  }
+  return _songsCache;
 }
 
-function create(data) {
-  const songs = getAll();
+// ── Get song by ID (sync) ──
+export function getById(id) {
+  return getAll().find(s => String(s.id) === String(id)) || null;
+}
+
+// ── Create song ──
+export async function createSong(data, ownerEmail = '') {
+  const now = new Date().toISOString();
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
   const song = {
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    id,
     title: data.title || '',
     key: data.key || 'C',
     tempo: data.tempo || '',
@@ -71,101 +114,209 @@ function create(data) {
     section: data.section || '',
     genre: data.genre || 'Neutro',
     lyrics: data.lyrics || '',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    created_at: now,
+    updated_at: now,
+    owner_email: ownerEmail,
+    is_catalog: false
   };
-  songs.push(song);
-  saveAll(songs);
-  return song;
+
+  // Push to Supabase (best effort)
+  try {
+    await db.insert('canciones', song);
+  } catch (e) {
+    console.warn('Supabase insert falló:', e.message);
+  }
+
+  // Update cache + local
+  const normalized = normalizeSong(song);
+  _songsCache.push(normalized);
+  saveLocalCache(_songsCache);
+
+  return normalized;
 }
 
-function update(id, data) {
+// ── Update song ──
+export async function updateSong(id, data) {
   const songs = getAll();
   const idx = songs.findIndex(s => s.id === id);
   if (idx === -1) return null;
-  songs[idx] = { ...songs[idx], ...data, updatedAt: new Date().toISOString() };
-  saveAll(songs);
-  return songs[idx];
-}
 
-function remove(id) {
-  const songs = getAll().filter(s => s.id !== id);
-  saveAll(songs);
-}
+  const updated = {
+    ...songs[idx],
+    ...data,
+    updatedAt: new Date().toISOString()
+  };
 
-function getBySection(section) {
-  return getAll().filter(s => s.section === section);
-}
+  // Build the Supabase record (snake_case fields)
+  const supabaseRecord = {
+    title: updated.title,
+    key: updated.key,
+    tempo: updated.tempo,
+    author: updated.author,
+    section: updated.section,
+    genre: updated.genre,
+    lyrics: updated.lyrics,
+    updated_at: updated.updatedAt
+  };
 
-function getSections() {
-  const fromSongs = getAll().map(s => s.section).filter(Boolean);
-  // Keep only default sections + any section assigned to songs
-  const activeSections = [...new Set([...DEFAULT_SECTIONS, ...fromSongs])].sort();
-  // Sync localStorage to match
+  // Push to Supabase (best effort)
   try {
-    const extra = activeSections.filter(s => !fromSongs.includes(s) && DEFAULT_SECTIONS.includes(s));
-    localStorage.setItem('gdefe_extra_sections', JSON.stringify(extra));
-  } catch {}
+    await db.update('canciones', supabaseRecord, { eq: { id } });
+  } catch (e) {
+    console.warn('Supabase update falló:', e.message);
+  }
+
+  // Update cache + local
+  songs[idx] = updated;
+  _songsCache = songs;
+  saveLocalCache(songs);
+
+  return updated;
+}
+
+// ── Remove song ──
+export async function removeSong(id) {
+  // Remove from Supabase (best effort)
+  try {
+    await db.remove('canciones', { eq: { id } });
+  } catch (e) {
+    console.warn('Supabase delete falló:', e.message);
+  }
+
+  // Update cache + local
+  _songsCache = getAll().filter(s => s.id !== id);
+  saveLocalCache(_songsCache);
+}
+
+// ══════════════════════════════════════════
+//  MIGRATION / SEEDING
+// ══════════════════════════════════════════
+
+// ── Seed the 211 catalog songs into Supabase ──
+export async function seedCatalogSongs() {
+  // Check if catalog songs already exist
+  try {
+    const { data } = await db.select('canciones', {
+      eq: { is_catalog: 'true' },
+      limit: 1
+    });
+    if (data && data.length > 0) {
+      return { seeded: false, msg: 'Ya existen canciones del catálogo' };
+    }
+  } catch { /* fall through */ }
+
+  // Load default songs
+  const DEFAULT_SONGS = (await import('./songs-data.js')).default;
+  const songs = DEFAULT_SONGS.map(s => ({
+    id: String(s.id),
+    title: s.title || '',
+    key: s.key || detectKey(s.lyrics),
+    tempo: s.tempo || '',
+    author: s.author || '',
+    section: s.section || '',
+    genre: normalizeGenre(s.genre),
+    lyrics: s.lyrics || '',
+    created_at: s.createdAt || new Date().toISOString(),
+    updated_at: s.updatedAt || new Date().toISOString(),
+    owner_email: '',
+    is_catalog: true
+  }));
+
+  // Insert in batches of 50
+  let inserted = 0;
+  for (let i = 0; i < songs.length; i += 50) {
+    const batch = songs.slice(i, i + 50);
+    try {
+      const { error } = await db.insert('canciones', batch);
+      if (!error) inserted += batch.length;
+    } catch (e) {
+      console.warn('Batch insert falló:', e.message);
+    }
+  }
+
+  // Update cache
+  _songsCache = songs.map(normalizeSong);
+  _cacheLoaded = true;
+  saveLocalCache(_songsCache);
+
+  return { seeded: true, count: inserted };
+}
+
+// ── Push existing localStorage songs to Supabase ──
+export async function migrateLocalToSupabase() {
+  // Check if Supabase already has data
+  try {
+    const { data, error } = await db.select('canciones', { limit: 1 });
+    if (!error && data && data.length > 0) {
+      return { migrated: false, reason: 'Supabase ya tiene datos' };
+    }
+  } catch { /* fall through */ }
+
+  const local = loadLocalCache();
+  if (!local || local.length === 0) {
+    return { migrated: false, reason: 'No hay datos locales' };
+  }
+
+  // Push all local songs to Supabase
+  const songs = local.map(s => ({
+    id: String(s.id),
+    title: s.title,
+    key: s.key || 'C',
+    tempo: s.tempo || '',
+    author: s.author || '',
+    section: s.section || '',
+    genre: s.genre || 'Neutro',
+    lyrics: s.lyrics || '',
+    created_at: s.createdAt || new Date().toISOString(),
+    updated_at: s.updatedAt || new Date().toISOString(),
+    owner_email: '',
+    is_catalog: /^\d+$/.test(String(s.id)) // numeric IDs = catalog
+  }));
+
+  let inserted = 0;
+  for (let i = 0; i < songs.length; i += 50) {
+    const batch = songs.slice(i, i + 50);
+    try {
+      const { error } = await db.insert('canciones', batch);
+      if (!error) inserted += batch.length;
+    } catch (e) {
+      console.warn('Migrate batch falló:', e.message);
+    }
+  }
+
+  // Update cache
+  _songsCache = local;
+  _cacheLoaded = true;
+
+  return { migrated: true, count: inserted };
+}
+
+// ══════════════════════════════════════════
+//  LEGACY SYNC HELPERS (removed)
+// ══════════════════════════════════════════
+// syncRemoteUserSongs ya no es necesaria —
+// ahora las canciones viven en Supabase.
+
+// ══════════════════════════════════════════
+//  SECTION / ALPHA HELPERS
+// ══════════════════════════════════════════
+
+export function getSections() {
+  const fromSongs = getAll().map(s => s.section).filter(Boolean);
+  const activeSections = [...new Set([...DEFAULT_SECTIONS, ...fromSongs])].sort();
   return activeSections;
 }
 
-function filterBySection(section) {
+export function getBySection(section) {
+  return getAll().filter(s => s.section === section);
+}
+
+export function filterBySection(section) {
   if (!section) return getAll();
   return getBySection(section);
 }
 
-// Get unique first letters of song titles for A-Z index
-function getAlphas() {
+export function getAlphas() {
   const letters = getAll().map(s => s.title.charAt(0).toUpperCase()).filter(Boolean);
   return [...new Set(letters)].sort();
 }
-
-// ── Remote sync: fetch user songs from GitHub ──
-// Admin publica canciones editando user-songs.json directo en GitHub.
-// La app solo las descarga para que todos las vean.
-
-const USER_SONGS_RAW = 'https://raw.githubusercontent.com/GdeFeChile/cancionero/main/user-songs.json';
-let _remoteSongsCache = null;
-let _remoteSongsCacheTime = 0;
-const REMOTE_CACHE_TTL = 60_000;
-
-async function fetchRemoteUserSongs(force) {
-  if (!force && _remoteSongsCache && Date.now() - _remoteSongsCacheTime < REMOTE_CACHE_TTL) {
-    return _remoteSongsCache;
-  }
-  try {
-    const res = await fetch(USER_SONGS_RAW);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    _remoteSongsCache = Array.isArray(data) ? data : [];
-    _remoteSongsCacheTime = Date.now();
-    return _remoteSongsCache;
-  } catch (e) {
-    console.warn('fetchRemoteUserSongs falló', e.message);
-    return _remoteSongsCache || [];
-  }
-}
-
-// Merge remote user songs into localStorage (called on app init)
-export async function syncRemoteUserSongs() {
-  const remote = await fetchRemoteUserSongs();
-  if (!remote.length) return { added: 0, total: remote.length };
-
-  const songs = getAll();
-  let added = 0;
-  const localIds = new Set(songs.map(s => s.id));
-
-  for (const song of remote) {
-    if (!localIds.has(song.id)) {
-      songs.push(normalizeSong(song));
-      added++;
-    }
-  }
-
-  if (added > 0) {
-    saveAll(songs);
-  }
-  return { added, total: remote.length };
-}
-
-export { getAll, getById, create, update, remove, getBySection, getSections, filterBySection, getAlphas };

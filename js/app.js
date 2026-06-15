@@ -1,8 +1,8 @@
-import { getAll, getById, create, update, remove, getSections, syncRemoteUserSongs } from './songs.js';
+import { getAll, getById, createSong, updateSong, removeSong, getSections, loadAll, seedCatalogSongs, migrateLocalToSupabase } from './songs.js';
 import { transposeLyrics, getKeyName, NOTES } from './chords.js';
 import { startTuner, stopTuner, setOnPitchDetected, getIsRunning, renderGauge } from './tuner.js';
 import { getAll as getAllPlaylists, getById as getPlaylistById, create as createPlaylist, remove as removePlaylist, addSong as addSongToPlaylist, removeSong as removeSongFromPlaylist, moveSong as moveSongInPlaylist } from './playlists.js';
-import { checkAuth, login, register, logout, getUser, isAdmin, fetchApprovedList, validateSession, getPendingUsers, getAllLocalUsers, approveUserRemote, rejectUserRemote } from './auth.js';
+import { checkAuth, login, register, logout, getUser, isAdmin, refreshUser, getPendingUsers, getAllUsers, approveUser, rejectUser } from './auth.js';
 
 // ── Chord Notation Helpers ──
 const NOTE_TO_SPANISH = { 'C':'Do', 'C#':'Do#', 'Db':'Reb', 'D':'Re', 'D#':'Re#', 'Eb':'Mib', 'E':'Mi', 'F':'Fa', 'F#':'Fa#', 'Gb':'Solb', 'G':'Sol', 'G#':'Sol#', 'Ab':'Lab', 'A':'La', 'A#':'La#', 'Bb':'Sib', 'B':'Si' };
@@ -1125,17 +1125,12 @@ document.getElementById('btnEditSong').addEventListener('click', () => {
   openEditModal(song);
 });
 
-// Publish to GitHub: copy JSON and open edit page
-document.getElementById('btnPublish').addEventListener('click', () => {
-  const song = getById(currentId);
-  if (!song) return;
-  const json = JSON.stringify(song, null, 2);
-  navigator.clipboard.writeText(json).then(() => {
-    showToast('✅ JSON copiado. Pega en user-songs.json en GitHub');
-  }).catch(() => {
-    showToast('📋 No se pudo copiar automáticamente. Selecciona el texto manualmente.', 'error');
-  });
-  window.open('https://github.com/GdeFeChile/cancionero/edit/main/user-songs.json', '_blank');
+// Sync from Supabase (ya no se publica a GitHub manualmente)
+document.getElementById('btnPublish').addEventListener('click', async () => {
+  showToast('🔄 Sincronizando desde la nube…');
+  await loadAll();
+  renderAll();
+  showToast('✅ Canciones sincronizadas');
 });
 
 document.getElementById('btnDelete').addEventListener('click', () => {
@@ -1160,8 +1155,8 @@ document.getElementById('btnDelete').addEventListener('click', () => {
       <button class="btn btn-danger" id="modalConfirm">Eliminar</button>
     </div>
   `);
-  document.getElementById('modalConfirm').addEventListener('click', () => {
-    remove(currentId);
+  document.getElementById('modalConfirm').addEventListener('click', async () => {
+    await removeSong(currentId);
     hideModal();
     currentId = null;
     $songView.style.display = 'none';
@@ -1314,7 +1309,7 @@ function openEditModal(song) {
     </div>
   `);
 
-  document.getElementById('modalSave').addEventListener('click', () => {
+  document.getElementById('modalSave').addEventListener('click', async () => {
     const data = {
       title: document.getElementById('fTitle').value.trim(),
       key: document.getElementById('fKey').value,
@@ -1328,23 +1323,20 @@ function openEditModal(song) {
     if (!data.lyrics) { showToast('La letra es obligatoria'); return; }
 
     if (isNew) {
-      const created = create(data);
+      const user = getUser();
+      const created = await createSong(data, user?.email || '');
       hideModal();
       openSong(created.id);
       renderSongList();
       renderAlphaTabs();
-      if (isAdmin()) {
-        showToast('💡 Usa el botón 📋 en la canción para publicarla en GitHub');
-      }
+      showToast('✅ Canción guardada en la nube');
     } else {
-      update(s.id, data);
+      await updateSong(s.id, data);
       hideModal();
       openSong(s.id);
       renderSongList();
       renderAlphaTabs();
-      if (isAdmin()) {
-        showToast('💡 Canción actualizada. Para publicarla en GitHub, edita user-songs.json');
-      }
+      showToast('✅ Canción actualizada en la nube');
     }
   });
 
@@ -1541,6 +1533,12 @@ async function handleLogin(e) {
 
   const result = await login($loginUser.value, $loginPass.value);
   if (result.ok) {
+    // Ensure Supabase has songs (idempotent — checks before inserting)
+    await migrateLocalToSupabase();
+    await seedCatalogSongs();
+
+    // Load all songs from Supabase into cache
+    await loadAll();
     initApp();
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
@@ -1571,7 +1569,7 @@ async function handleRegister(e) {
   $regError.textContent = '';
   await new Promise(r => setTimeout(r, 50));
 
-  const result = register($regUser.value, $regPass.value);
+  const result = await register($regUser.value, $regPass.value);
   if (result.ok) {
     // Registration complete — show pending message, don't auto-login
     showLoginForm();
@@ -1603,47 +1601,56 @@ function preventDocumentScroll() {
 
 // ── Admin: user management panel ──
 async function renderAdminUsers() {
-  const pending = getPendingUsers();
-
-  // Fetch fresh list from GitHub
-  const approved = await fetchApprovedList(true);
+  const pending = await getPendingUsers();
+  const allUsers = await getAllUsers();
 
   let html = `<div class="modal-head"><h3>Usuarios registrados</h3><button class="modal-close" id="modalClose">✕</button></div><div class="modal-body">`;
 
   // ── Pending section ──
   if (pending.length) {
     html += `<h4 class="usr-section-title">⏳ Pendientes de aprobación</h4><div class="usr-list">`;
-    for (const name of pending) {
+    for (const p of pending) {
       html += `<div class="usr-row">
-        <span class="usr-name">${escapeHtml(name)}</span>
+        <span class="usr-name">${escapeHtml(p.username)}</span>
         <span class="usr-role-tag usr-pending">pendiente</span>
         <div class="usr-actions">
-          <button class="usr-btn usr-btn-ok" data-action="approve" data-user="${escapeHtml(name)}">✓ Aprobar</button>
-          <button class="usr-btn usr-btn-no" data-action="reject" data-user="${escapeHtml(name)}">✕ Rechazar</button>
+          <button class="usr-btn usr-btn-ok" data-action="approve" data-email="${escapeHtml(p.email)}">✓ Aprobar</button>
+          <button class="usr-btn usr-btn-no" data-action="reject" data-email="${escapeHtml(p.email)}">✕ Rechazar</button>
         </div>
       </div>`;
     }
     html += `</div>`;
   }
 
-  // ── Approved section (from GitHub) ──
-  if (approved) {
-    const list = Object.entries(approved).filter(([k]) => k !== '_comentario' && k !== '_ultima_actualizacion' && k !== 'admin');
-    if (list.length) {
-      html += `<h4 class="usr-section-title">✓ Usuarios aprobados</h4><div class="usr-list">`;
-      for (const [name, role] of list) {
-        html += `<div class="usr-row">
-          <span class="usr-name">${escapeHtml(name)}</span>
-          <span class="usr-role-tag">${role}</span>
-          <div class="usr-actions"><button class="usr-btn usr-btn-no" data-action="reject" data-user="${escapeHtml(name)}">✕ Quitar</button></div>
-        </div>`;
-      }
-      html += `</div>`;
+  // ── Approved section ──
+  const approved = allUsers.filter(u => u.status === 'approved');
+  if (approved.length) {
+    html += `<h4 class="usr-section-title">✓ Usuarios aprobados</h4><div class="usr-list">`;
+    for (const u of approved) {
+      html += `<div class="usr-row">
+        <span class="usr-name">${escapeHtml(u.name)}</span>
+        <span class="usr-role-tag">${u.role}</span>
+        <div class="usr-actions"><button class="usr-btn usr-btn-no" data-action="reject" data-email="${escapeHtml(u.email)}">✕ Quitar</button></div>
+      </div>`;
     }
+    html += `</div>`;
   }
 
-  html += `<p class="usr-count">${pending.length} pendientes · ${Object.keys(approved || {}).filter(k => k !== '_comentario' && k !== '_ultima_actualizacion' && k !== 'admin').length} aprobados</p>`;
-  html += '<p class="usr-token-status" style="margin-top:10px">ℹ️ Las canciones se publican editando <code>user-songs.json</code> en <a href="https://github.com/GdeFeChile/cancionero/blob/main/user-songs.json" target="_blank">GitHub</a></p>';
+  // ── Rejected section ──
+  const rejected = allUsers.filter(u => u.status === 'rejected');
+  if (rejected.length) {
+    html += `<h4 class="usr-section-title">✕ Rechazados</h4><div class="usr-list">`;
+    for (const u of rejected) {
+      html += `<div class="usr-row">
+        <span class="usr-name">${escapeHtml(u.name)}</span>
+        <span class="usr-role-tag usr-pending">rechazado</span>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  html += `<p class="usr-count">${pending.length} pendientes · ${approved.length} aprobados</p>`;
+  html += '<p class="usr-token-status" style="margin-top:10px">✅ Las canciones se sincronizan automáticamente con la nube. No necesitas GitHub.</p>';
   html += '</div>';
 
   showModal(html);
@@ -1652,93 +1659,32 @@ async function renderAdminUsers() {
   // Attach action buttons
   document.querySelectorAll('[data-action="approve"]').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const username = btn.dataset.user;
+      const email = btn.dataset.email;
       btn.disabled = true;
       btn.textContent = 'Aprobando…';
-      const result = await approveUserRemote(username);
-      if (result.ok) {
-        showToast(result.msg);
-        renderAdminUsers(); // re-render
-      } else {
-        showToast(result.msg, true);
-        btn.disabled = false;
-        btn.textContent = '✓ Aprobar';
-      }
+      const result = await approveUser(email);
+      showToast(result.msg);
+      renderAdminUsers();
     });
   });
   document.querySelectorAll('[data-action="reject"]').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const username = btn.dataset.user;
-      if (!confirm(`¿Rechazar/eliminar a "${username}"?`)) return;
+      const email = btn.dataset.email;
+      if (!confirm('¿Rechazar este usuario?')) return;
       btn.disabled = true;
-      btn.textContent = 'Eliminando…';
-      const result = await rejectUserRemote(username);
-      showToast(result.msg, !result.ok);
-      renderAdminUsers(); // re-render
+      btn.textContent = 'Rechazando…';
+      const result = await rejectUser(email);
+      showToast(result.msg);
+      renderAdminUsers();
     });
   });
-
-  // Token configuration button
-  const setBtn = document.getElementById('btnSetToken');
-  if (setBtn) {
-    setBtn.addEventListener('click', () => {
-      const token = prompt('Pega tu GitHub Personal Access Token:');
-      if (token && token.trim()) {
-        const cfg = {
-          token: token.trim(),
-          repo: 'GdeFeChile/cancionero',
-          branch: 'main',
-          userFilePath: 'usuarios.json',
-          userSongsFilePath: 'user-songs.json'
-        };
-        localStorage.setItem('gdefe_github_config', JSON.stringify(cfg));
-        showToast('🔑 Token guardado');
-        // Immediately push local songs
-        pushLocalSongsToRemote().then(r => {
-          if (r.pushed > 0) showToast(`✅ ${r.pushed} canción(es) subida(s) a GitHub`);
-        });
-        renderAdminUsers();
-      }
-    });
-  }
 }
 
-// ── Init ──
-function initApp() {
-  // Load favorites from localStorage
-  try {
-    const stored = localStorage.getItem('gdefe_favorites');
-    if (stored) favorites = JSON.parse(stored);
-  } catch { /* fall through */ }
+// ── Render user badge + admin buttons ──
+function renderUserBadge() {
+  // Remove existing user UI elements to avoid duplicates
+  document.querySelectorAll('.user-badge, .fb-users, .fb-logout').forEach(el => el.remove());
 
-  updateSetlistButton();
-  renderAll();
-}
-
-(async function init() {
-  await fetchApprovedList();
-  validateSession();
-  if (checkAuth()) {
-    initApp();
-    window.scrollTo(0, 0);
-    preventDocumentScroll();
-    hideLogin();
-    // Sync user songs from GitHub (admin publica en user-songs.json)
-    syncRemoteUserSongs().then(r => {
-      if (r.added > 0) {
-        renderAll();
-        showToast(`🔄 ${r.added} canción(es) sincronizada(s) desde GitHub`);
-      }
-    });
-  } else {
-    showLogin();
-  }
-  // Show login form by default (register hidden)
-  showLoginForm();
-})();
-
-// ── Logout ──
-(function addUserUI() {
   const foot = document.querySelector('.sb-foot');
   if (!foot) return;
   const user = getUser();
@@ -1750,7 +1696,7 @@ function initApp() {
   badge.innerHTML = `<span class="ub-name">${escapeHtml(user.user)}</span>${user.role === 'admin' ? '<span class="ub-role">admin</span>' : ''}`;
   foot.prepend(badge);
 
-  // Admin: panel de usuarios con aprobación
+  // Admin: user management button
   if (user.role === 'admin') {
     const usersBtn = document.createElement('button');
     usersBtn.className = 'fb fb-users';
@@ -1764,9 +1710,47 @@ function initApp() {
   const btn = document.createElement('button');
   btn.className = 'fb fb-logout';
   btn.textContent = '🚪 Salir';
-  btn.addEventListener('click', () => {
-    logout();
+  btn.addEventListener('click', async () => {
+    await logout();
     location.reload();
   });
   foot.appendChild(btn);
+}
+
+// ── Init ──
+function initApp() {
+  // Load favorites from localStorage
+  try {
+    const stored = localStorage.getItem('gdefe_favorites');
+    if (stored) favorites = JSON.parse(stored);
+  } catch { /* fall through */ }
+
+  renderUserBadge();
+  updateSetlistButton();
+  renderAll();
+}
+
+(async function init() {
+  await refreshUser();
+  const hasSession = await checkAuth();
+  if (hasSession) {
+    // Ensure Supabase has songs (idempotent — checks before inserting)
+    await migrateLocalToSupabase();
+    await seedCatalogSongs();
+
+    // Load all songs from Supabase into cache
+    await loadAll();
+    initApp();
+    window.scrollTo(0, 0);
+    preventDocumentScroll();
+    hideLogin();
+  } else {
+    showLogin();
+    // Pre-load local cache for speed after login
+    getAll();
+  }
+  // Show login form by default (register hidden)
+  showLoginForm();
 })();
+
+// ── renderUserBadge() se llama desde initApp() en lugar de este IIFE ──
