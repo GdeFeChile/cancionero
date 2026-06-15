@@ -12,8 +12,13 @@ body {
   touch-action: none;
 }
 /* Allow touch scroll inside specific containers */
-.song-list, .song-body, .sb-body, .modal-content, .alpha-col {
+.song-list, .sb-body, .modal-content, .alpha-col {
   touch-action: auto;
+}
+/* Song body: allow vertical scroll but block browser pinch-zoom */
+/* Custom pinch-to-zoom handled by JS */
+.song-body {
+  touch-action: pan-y;
 }
 
 ::-webkit-scrollbar {

@@ -1083,6 +1083,46 @@ document.getElementById('btnFontUp').addEventListener('click', () => {
 
 document.getElementById('btnFit').addEventListener('click', fitSongToScreen);
 
+// ── Pinch-to-zoom + double-tap on song body ──
+let _pinchStartSize = 0;
+let _pinchStartDist = 0;
+let _lastTapTime = 0;
+
+$songBody.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    _pinchStartDist = Math.hypot(dx, dy);
+    _pinchStartSize = fontSize;
+  }
+}, { passive: true });
+
+$songBody.addEventListener('touchmove', (e) => {
+  if (e.touches.length === 2) {
+    e.preventDefault(); // Prevent browser zoom
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const dist = Math.hypot(dx, dy);
+    const scale = dist / _pinchStartDist;
+    const newSize = Math.round(_pinchStartSize * scale);
+    fontSize = Math.max(45, Math.min(250, newSize));
+    if (numCols === 1) savedFontSize = fontSize;
+    $songBody.style.fontSize = fontSize + '%';
+  }
+}, { passive: false });
+
+$songBody.addEventListener('touchend', (e) => {
+  // Double-tap: two taps within 300ms
+  if (e.changedTouches.length === 1) {
+    const now = Date.now();
+    if (now - _lastTapTime < 300) {
+      fitSongToScreen();
+      e.preventDefault();
+    }
+    _lastTapTime = now;
+  }
+}, { passive: false });
+
 document.getElementById('btnCol1').addEventListener('click', () => {
   numCols = 1;
   fontSize = savedFontSize;
