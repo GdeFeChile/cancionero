@@ -36,6 +36,7 @@ let numCols = 1;
 
 let currentView = 'songs';
 let searchTimer;
+let _lastEffectiveLines = 0; // line count from last renderLyrics
 
 // ── New state: Favoritos y Setlists ──
 let favorites = [];
@@ -745,32 +746,26 @@ function renderLyrics(song) {
     }
   }
 
-  if (numCols === 2) {
-    // On phones, reduce base font for two columns to fit better
-    if (window.innerWidth <= 480) {
-      fontSize = Math.min(fontSize, 80);
-    } else if (window.innerWidth <= 600) {
-      fontSize = Math.min(fontSize, 93);
-    }
+  // Count effective lines for auto-fit
+  _lastEffectiveLines = 0;
+  for (const h of lineHtmls) {
+    if (h.includes('section-label')) _lastEffectiveLines += 0.7;
+    else if (h.includes('empty-line')) _lastEffectiveLines += 0.2;
+    else if (h.includes('chord-above-block')) _lastEffectiveLines += 1.8;
+    else _lastEffectiveLines += 1;
+  }
 
-    // Count effective lines for auto-fit
-    let effectiveLines = 0;
-    for (const h of lineHtmls) {
-      if (h.includes('section-label')) effectiveLines += 0.7;
-      else if (h.includes('empty-line')) effectiveLines += 0.2;
-      else if (h.includes('chord-above-block')) effectiveLines += 1.8;
-      else effectiveLines += 1;
-    }
-    const linesPerCol = Math.ceil(effectiveLines / 2);
+  if (numCols === 2) {
+    // Auto-fit: calculate font size so columns fill available height
+    const linesPerCol = Math.ceil(_lastEffectiveLines / 2);
     const hdr = document.querySelector('.song-hdr');
-    const headerH = hdr ? hdr.offsetHeight : 60;
+    const headerH = hdr ? hdr.offsetHeight : 50;
     const availH = window.innerHeight - headerH - 72; // 72 = song-body padding
-    const lineH = 1.7 * 16 * fontSize / 100;
-    const neededH = linesPerCol * lineH;
-    if (neededH > availH) {
-      const ratio = availH / neededH;
-      fontSize = Math.max(50, Math.round(fontSize * ratio));
-    }
+    const baseLineH = 1.7 * 16; // line-height * base px at 100%
+    const targetLineH = Math.max(14, availH / linesPerCol);
+    fontSize = Math.round((targetLineH / baseLineH) * 100);
+    fontSize = Math.max(45, Math.min(160, fontSize));
+    savedFontSize = fontSize;
 
     // Split by effective weight so columns are balanced
     const lineWeights = lineHtmls.map(h => {
@@ -796,6 +791,33 @@ function renderLyrics(song) {
 
   // Reset scroll
   $songBody.scrollTop = 0;
+}
+
+// ── Fit to screen ──
+function fitSongToScreen() {
+  const song = getById(currentId);
+  if (!song) return;
+
+  // Re-render to get accurate line count
+  renderLyrics(song);
+  if (_lastEffectiveLines === 0) return;
+
+  if (numCols === 1) {
+    // 1 col: calculate font size to fill available height
+    const hdr = document.querySelector('.song-hdr');
+    const headerH = hdr ? hdr.offsetHeight : 50;
+    const availH = window.innerHeight - headerH - 72;
+    const baseLineH = 1.7 * 16; // 27.2px at 100%
+    const targetLineH = Math.max(14, availH / _lastEffectiveLines);
+    fontSize = Math.round((targetLineH / baseLineH) * 100);
+    fontSize = Math.max(45, Math.min(250, fontSize));
+    savedFontSize = fontSize;
+    renderLyrics(song);
+    showToast(`📐 Ajustado: ${fontSize}%`);
+  } else {
+    // 2 col: renderLyrics already auto-fits
+    showToast(`📐 Ajustado a 2 columnas`);
+  }
 }
 
 // ── Favorites ──
@@ -1058,6 +1080,8 @@ document.getElementById('btnFontUp').addEventListener('click', () => {
   if (numCols === 1) savedFontSize = fontSize;
   $songBody.style.fontSize = fontSize + '%';
 });
+
+document.getElementById('btnFit').addEventListener('click', fitSongToScreen);
 
 document.getElementById('btnCol1').addEventListener('click', () => {
   numCols = 1;
