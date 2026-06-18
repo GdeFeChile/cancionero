@@ -1,5 +1,9 @@
 html {
-  height: 100%; overflow: hidden;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
 body {
   font-family: var(--ff-body);
@@ -93,8 +97,12 @@ body::before {
   .sidebar.collapsed {
     width: 0;
     min-width: 0;
-    border-right-color: transparent;
+    overflow: hidden;
+    border-color: transparent;
   }
+}
+
+/* ── Mobile sidebar fixes ── */
 }
 
 .sb-head {
@@ -326,6 +334,7 @@ body::before {
     left: -100%;
     width: 85vw;
     max-width: 300px;
+    min-width: 0;
     height: 100%;
     z-index: 100;
     transition: left 0.3s var(--ease-out);
