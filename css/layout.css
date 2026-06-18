@@ -9,7 +9,7 @@ body {
   overflow: hidden;
   font-size: 13.5px;
   -webkit-font-smoothing: antialiased;
-  touch-action: none;
+  touch-action: manipulation;
 }
 /* Allow touch scroll inside specific containers */
 .song-list, .sb-body, .modal-content, .alpha-col {
