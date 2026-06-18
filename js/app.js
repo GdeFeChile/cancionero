@@ -103,6 +103,31 @@ function showView(view) {
 $mobBtn.addEventListener('click', () => { $sidebar.classList.toggle('open'); $mobOvl.classList.toggle('active'); });
 $mobOvl.addEventListener('click', () => { $sidebar.classList.remove('open'); $mobOvl.classList.remove('active'); });
 
+// ── Safety net: force-show hamburger on touch devices ──
+// Some browsers (esp. Android Chrome) fail to re-evaluate
+// `pointer: coarse` / `any-pointer: coarse` after orientation
+// changes. This ensures the button is always visible when
+// touching the screen, regardless of CSS media query state.
+function ensureMobBtnVisible() {
+  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    // only apply if CSS hasn't already handled it
+    const style = getComputedStyle($mobBtn);
+    if (style.display === 'none') {
+      $mobBtn.style.setProperty('display', 'flex', 'important');
+    }
+  }
+}
+// Check after paint, then on every orientation change
+requestAnimationFrame(() => requestAnimationFrame(ensureMobBtnVisible));
+window.addEventListener('orientationchange', () => {
+  setTimeout(ensureMobBtnVisible, 300);
+});
+// Also re-check when coming back from a hidden tab (some browsers
+// suspend media query re-evaluation in background)
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) setTimeout(ensureMobBtnVisible, 200);
+});
+
 // ── Sidebar toggle (desktop) ──
 document.getElementById('btnToggleSidebar').addEventListener('click', () => {
   const btn = document.getElementById('btnToggleSidebar');
