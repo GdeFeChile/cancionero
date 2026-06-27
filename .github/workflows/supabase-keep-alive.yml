@@ -1,0 +1,49 @@
+# ─── Supabase Keep-Alive ───
+# Evita que el proyecto gratuito de Supabase se pause por inactividad.
+# Los proyectos Free se pausan tras 7 días sin actividad.
+# Este workflow hace un ping cada 5 días para mantenerlo activo.
+#
+# Los valores por defecto (SUPABASE_URL y SUPABASE_ANON_KEY) ya están
+# expuestos en js/supabase-client.js, por lo que incluirlos aquí no
+# introduce riesgo adicional. Si prefieres usar secrets de GitHub,
+# configúralos en Settings → Secrets and variables → Actions.
+
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    - cron: '0 12 */5 * *'   # cada 5 días a las 12:00 UTC
+  workflow_dispatch:          # también se puede ejecutar manualmente
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://qjswcvgbvnarincgafmo.supabase.co' }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqc3djdmdidm5hcmluY2dhZm1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NjU2MjMsImV4cCI6MjA5NzA0MTYyM30.mkY7mMai1ngvlD8xf2GSKGztWaUNSf6XDk4OzMApTPI' }}
+    steps:
+      - name: Ping Supabase (health check)
+        run: |
+          echo "🏓 Ping a ${SUPABASE_URL} ..."
+
+          # Consulta mínima a la tabla songs (solo 1 registro, sin datos pesados)
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${SUPABASE_URL}/rest/v1/songs?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+
+          echo "HTTP ${HTTP_CODE}"
+
+          if [ "${HTTP_CODE}" = "000" ]; then
+            echo "⚠️  Proyecto pausado o inaccesible (DNS no resuelve)"
+            echo "🔗  Reactívalo en: https://supabase.com/dashboard/project/qjswcvgbvnarincgafmo"
+            exit 1
+          fi
+
+          if [ "${HTTP_CODE}" = "503" ]; then
+            echo "⚠️  Proyecto pausado — ve a Supabase Dashboard y haz clic en Restore"
+            echo "🔗  https://supabase.com/dashboard/project/qjswcvgbvnarincgafmo"
+            exit 1
+          fi
+
+          echo "✅ Proyecto activo. Próximo ping automático en 5 días."
