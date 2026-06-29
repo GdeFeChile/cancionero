@@ -35,28 +35,34 @@
         <button class="tr-btn" id="trUp">+</button>
       </div>
       <div class="tb-actions">
-        <span class="tb-act-sep"></span>
+        <!-- Always visible -->
         <button class="tb-btn" id="btnFontDown" title="Reducir tamaño de letra">A−</button>
         <button class="tb-btn" id="btnFontUp" title="Aumentar tamaño de letra">A+</button>
         <button class="tb-btn on" id="btnChords" title="Ocultar/Mostrar acordes">🎸</button>
         <button class="tb-btn" id="btnFavoriteDetail" title="Marcar como favorita">☆</button>
-        <span class="tb-act-sep"></span>
-        <button class="tb-btn" id="btnFit" title="Ajustar a la pantalla">📐</button>
-        <button class="tb-btn on" id="btnCol1" title="Una columna">▐</button>
-        <button class="tb-btn" id="btnCol2" title="Dos columnas">▐ ▐</button>
-        <button class="tb-btn" id="btnLayout" title="Acordes sobre la letra">≡</button>
-        <button class="tb-btn" id="btnNotation" title="Notación americana">🇺🇸</button>
-        <span class="tb-act-sep"></span>
-        <button class="fav-filter" id="favoritesFilter">⭐ Fav</button>
-        <button class="tb-btn hide-mobile" id="btnPrint" title="Imprimir">🖨️</button>
-        <button class="tb-btn" id="btnEditSong" title="Editar canción">✎</button>
-        <button class="tb-btn hdr-hide" id="btnHideHdr" title="Ocultar controles">▴</button>
-        <button class="tb-btn" id="btnPublish" title="Sincronizar canciones desde la nube" style="display:none">📋</button>
-        <button class="tb-btn" id="btnToggleSidebar" title="Sidebar" style="display:none">◀</button>
         <div class="theme-toggle" id="themeToggle" data-theme-state="dark" role="button" tabindex="0" title="Cambiar tema" style="display:inline-flex">
           <span class="tt-icon tt-sun">☀</span>
           <span class="tt-icon tt-moon">☾</span>
           <div class="tt-knob"></div>
+        </div>
+
+        <!-- Overflow toggle -->
+        <button class="tb-btn tb-ov-btn" id="tbOvBtn" title="Más opciones">⋯</button>
+
+        <!-- Overflow menu -->
+        <div class="tb-ov-menu" id="tbOvMenu">
+          <button class="tb-ov-item" id="btnFit" title="Ajustar a la pantalla">📐 Ajustar</button>
+          <div class="tb-ov-row">
+            <button class="tb-ov-item on" id="btnCol1" title="Una columna">▐ 1 col</button>
+            <button class="tb-ov-item" id="btnCol2" title="Dos columnas">▐ 2 cols</button>
+          </div>
+          <button class="tb-ov-item" id="btnLayout" title="Acordes sobre la letra">≡ Acordes arriba</button>
+          <button class="tb-ov-item" id="btnNotation" title="Notación americana">🇺🇸 Notación</button>
+          <div class="tb-ov-sep"></div>
+          <button class="tb-ov-item" id="favoritesFilter">⭐ Filtrar fav</button>
+          <button class="tb-ov-item hide-mobile" id="btnPrint" title="Imprimir">🖨️ Imprimir</button>
+          <button class="tb-ov-item" id="btnEditSong" title="Editar canción">✎ Editar</button>
+          <button class="tb-ov-item" id="btnPublish" title="Sincronizar canciones desde la nube" style="display:none">📋 Sincronizar</button>
         </div>
       </div>
     </div>

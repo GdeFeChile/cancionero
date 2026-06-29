@@ -136,15 +136,38 @@ document.getElementById('btnToggleSidebar').addEventListener('click', () => {
   btn.textContent = $sidebar.classList.contains('collapsed') ? '▶' : '◀';
 });
 
-// ── Header hide/show (mobile) ──
-document.getElementById('btnHideHdr').addEventListener('click', () => {
-  document.querySelector('.song-hdr').classList.add('hidden');
-  document.getElementById('btnShowHdr').classList.add('visible');
-});
-document.getElementById('btnShowHdr').addEventListener('click', () => {
-  document.querySelector('.song-hdr').classList.remove('hidden');
-  document.getElementById('btnShowHdr').classList.remove('visible');
-});
+// ── Header hide/show (mobile, if button exists) ──
+const hdrHideBtn = document.getElementById('btnHideHdr');
+if (hdrHideBtn) {
+  hdrHideBtn.addEventListener('click', () => {
+    document.querySelector('.song-hdr')?.classList.add('hidden');
+    document.getElementById('btnShowHdr')?.classList.add('visible');
+  });
+}
+const hdrShowBtn = document.getElementById('btnShowHdr');
+if (hdrShowBtn) {
+  hdrShowBtn.addEventListener('click', () => {
+    document.querySelector('.song-hdr')?.classList.remove('hidden');
+    hdrShowBtn.classList.remove('visible');
+  });
+}
+
+// ── Overflow menu (⋯) ──
+const tbOvBtn = document.getElementById('tbOvBtn');
+const tbOvMenu = document.getElementById('tbOvMenu');
+if (tbOvBtn && tbOvMenu) {
+  tbOvBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = tbOvMenu.classList.toggle('open');
+    tbOvBtn.classList.toggle('open', open);
+  });
+  document.addEventListener('click', (e) => {
+    if (!tbOvMenu.contains(e.target) && e.target !== tbOvBtn) {
+      tbOvMenu.classList.remove('open');
+      tbOvBtn.classList.remove('open');
+    }
+  });
+}
 
 // ── Search ──
 $searchInput.addEventListener('input', (e) => {
