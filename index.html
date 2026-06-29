@@ -27,13 +27,6 @@
       </div>
       <span class="tb-song-title" id="bottomSongTitle">—</span>
     </div>
-    <div class="tb-center">
-      <div class="search-wrap">
-        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input id="searchInput" type="text" placeholder="Buscar… (#G para tonalidad)">
-        <button class="search-clear" id="searchClear" aria-label="Limpiar búsqueda">×</button>
-      </div>
-    </div>
     <div class="tb-right">
       <div class="transpose">
         <span class="tr-lbl">Tono</span>
@@ -55,7 +48,7 @@
         <button class="tb-btn" id="btnNotation" title="Notación americana">🇺🇸</button>
         <span class="tb-act-sep"></span>
         <button class="fav-filter" id="favoritesFilter">⭐ Fav</button>
-        <button class="tb-btn" id="btnPrint" title="Imprimir">🖨️</button>
+        <button class="tb-btn hide-mobile" id="btnPrint" title="Imprimir">🖨️</button>
         <button class="tb-btn" id="btnEditSong" title="Editar canción">✎</button>
         <button class="tb-btn hdr-hide" id="btnHideHdr" title="Ocultar controles">▴</button>
         <button class="tb-btn" id="btnPublish" title="Sincronizar canciones desde la nube" style="display:none">📋</button>
@@ -78,6 +71,15 @@
     <div class="vpills">
       <button class="vp active" id="vp1">🎵 Canciones</button>
       <button class="vp" id="vp2">🎸 Afinador</button>
+    </div>
+
+    <!-- Search in drawer -->
+    <div class="dr-search">
+      <div class="search-wrap">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="searchInput" type="text" placeholder="Buscar… (#G para tonalidad)">
+        <button class="search-clear" id="searchClear" aria-label="Limpiar búsqueda">×</button>
+      </div>
     </div>
 
     <!-- Body: alpha-col (A-Z + sections) + song-col -->

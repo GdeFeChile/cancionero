@@ -340,28 +340,32 @@
 .song-line {
   white-space: pre-wrap; word-break: break-word;
   min-height: 1.7em;
+  margin-bottom: .15em;
 }
 .chord-line {
   font-family: 'Nunito', sans-serif; color: var(--chord);
-  font-weight: 700; user-select: none; letter-spacing: .02em;
-  font-size: .95em; opacity: .85;
+  font-weight: 700; user-select: none; letter-spacing: .04em;
+  font-size: 1em; opacity: .9;
 }
-.lyric-line { color: var(--text); }
+.lyric-line { color: var(--text); font-weight: 400; }
 
 .mixed-line {
   display: flex;
   align-items: baseline;
-  gap: 0;
+  gap: .5em;
+  flex-wrap: wrap;
 }
 .lyric-text {
-  flex: 0 0 28%;
+  flex: 0 1 auto;
   color: var(--text);
+  font-weight: 400;
+  min-width: 40%;
 }
 .chord-inline {
   font-family: 'Nunito', sans-serif; color: var(--chord);
-  font-weight: 700; font-size: .9em; letter-spacing: .02em;
+  font-weight: 700; font-size: .92em; letter-spacing: .03em;
   white-space: pre-wrap; flex-shrink: 0;
-  opacity: .85;
+  opacity: .9;
   transition: opacity var(--transition-fast);
 }
 
@@ -371,27 +375,32 @@
 
 /* Chords Above Layout */
 .chord-above-block {
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 .chord-above-block .chord-line {
-  font-size: .85em;
-  opacity: .7;
+  font-size: .9em;
+  opacity: .8;
   margin-bottom: 0;
-  line-height: 1.4;
+  line-height: 1.5;
+  letter-spacing: .06em;
 }
 .chord-above-block .lyric-line {
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .section-label {
-  font-size: .6rem; font-weight: 700; letter-spacing: .1em;
+  font-size: .65rem; font-weight: 700; letter-spacing: .12em;
   text-transform: uppercase; color: var(--song-muted);
-  margin-top: 10px; margin-bottom: 4px;
-  opacity: .7;
+  margin-top: 1.5em; margin-bottom: .5em;
+  opacity: .55;
+  display: block;
+  border-top: 1px solid var(--song-border);
+  padding-top: .8em;
 }
-.empty-line { height: 8px; }
+.empty-line { height: .5em; }
 
 .song-body p { margin-bottom: 0; }
+.song-body .song-line:last-child { margin-bottom: 0; }
 
 /* ═══════════════════════════════════════════════
    SKELETON LOADING
