@@ -129,12 +129,15 @@ document.addEventListener('visibilitychange', () => {
   if (!document.hidden) setTimeout(ensureMobBtnVisible, 200);
 });
 
-// ── Sidebar toggle (desktop) ──
-document.getElementById('btnToggleSidebar').addEventListener('click', () => {
-  const btn = document.getElementById('btnToggleSidebar');
-  $sidebar.classList.toggle('collapsed');
-  btn.textContent = $sidebar.classList.contains('collapsed') ? '▶' : '◀';
-});
+// ── Sidebar toggle (desktop, if element exists) ──
+const sidebarToggle = document.getElementById('btnToggleSidebar');
+if (sidebarToggle) {
+  sidebarToggle.addEventListener('click', () => {
+    const btn = document.getElementById('btnToggleSidebar');
+    $sidebar.classList.toggle('collapsed');
+    btn.textContent = $sidebar.classList.contains('collapsed') ? '▶' : '◀';
+  });
+}
 
 // ── Header hide/show (mobile, if button exists) ──
 const hdrHideBtn = document.getElementById('btnHideHdr');
