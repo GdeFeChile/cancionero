@@ -102,6 +102,9 @@ body::before {
 .tb-hamburger:hover {
   background: var(--panel);
 }
+.tb-hamburger:active {
+  transform: scale(.92);
+}
 
 .tb-brand {
   display: flex;
@@ -226,6 +229,9 @@ body::before {
 .tb-btn:hover {
   background: var(--panel);
 }
+.tb-btn:active {
+  transform: scale(.92);
+}
 .tb-btn.on {
   background: var(--accent);
   color: #0d0d0f;
@@ -249,7 +255,8 @@ body::before {
 
 /* ── Overflow menu ── */
 .tb-ov-menu {
-  display: none;
+  display: flex;
+  flex-direction: column;
   position: fixed;
   top: calc(var(--bar-height) - 4px);
   right: .5rem;
@@ -260,11 +267,17 @@ body::before {
   padding: .5rem;
   min-width: 11rem;
   box-shadow: var(--shadow-lg);
-  flex-direction: column;
   gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px) scale(.96);
+  transition: opacity .15s var(--ease-out), transform .2s var(--ease-out);
+  transform-origin: top right;
 }
 .tb-ov-menu.open {
-  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
 }
 
 .tb-ov-item {

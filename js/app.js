@@ -339,13 +339,14 @@ function renderSongList() {
     return;
   }
 
-  $songList.innerHTML = songs.map(s => {
+  $songList.innerHTML = songs.map((s, idx) => {
     const isActive = String(s.id) === String(currentId);
     const isFav = favorites.includes(String(s.id));
     const sectionLabel = s.section ? `<div class="si-meta">${escapeHtml(s.section)}</div>` : '';
     const starHtml = `<span class="si-star${isFav ? ' on' : ''}" data-id="${s.id}">${isFav ? '⭐' : '☆'}</span>`;
+    const delay = Math.min(idx * 20, 200);
     return `
-      <div class="si${isActive ? ' active' : ''}" data-id="${s.id}" tabindex="0">
+      <div class="si${isActive ? ' active' : ''}" data-id="${s.id}" tabindex="0" style="animation-delay:${delay}ms">
         <div>
           <div class="si-title">${escapeHtml(s.title)}${starHtml}</div>
           ${sectionLabel}
@@ -482,10 +483,11 @@ function renderSetlistView() {
       return;
     }
 
-    $addResults.innerHTML = filtered.map(s => {
+    $addResults.innerHTML = filtered.map((s, idx) => {
       const inSetlist = plSongIds.has(String(s.id));
+      const delay = Math.min(idx * 15, 150);
       return `
-        <div class="sl-add-item${inSetlist ? ' added' : ''}" data-id="${s.id}">
+        <div class="sl-add-item${inSetlist ? ' added' : ''}" data-id="${s.id}" style="animation-delay:${delay}ms">
           <span class="sl-add-item-title">${escapeHtml(s.title)}</span>
           <span class="si-key" style="margin:0 8px 0 auto">${s.key || 'C'}</span>
           ${inSetlist
@@ -529,7 +531,7 @@ function deselectSetlist() {
   renderSongList();
 }
 
-// ── Open Song ──
+// ── Open Song (with cross-fade) ──
 function openSong(id) {
   const song = getById(id);
   if (!song) return;
@@ -537,16 +539,33 @@ function openSong(id) {
   currentId = song.id;
   currentTranspose = 0;
 
+  const isFirstSong = $welcome.style.display !== 'none' || $songView.style.display !== 'flex';
+
   $welcome.style.display = 'none';
-  $songView.style.display = 'flex';
   $tunerView.classList.remove('active');
 
-  // Trigger enter animation (remove class to restart if same view)
-  $songView.classList.remove('song-view-enter');
-  // Force reflow so the class removal registers before re-adding
-  void $songView.offsetWidth;
-  $songView.classList.add('song-view-enter');
+  if (isFirstSong) {
+    // First song: just show and fade in
+    $songView.style.display = 'flex';
+    $songView.classList.remove('song-view-enter');
+    void $songView.offsetWidth;
+    $songView.classList.add('song-view-enter');
+    renderSongUI(song);
+  } else {
+    // Cross-fade: fade out, update, fade in
+    $songView.classList.remove('song-view-enter');
+    $songView.classList.add('song-view-exit');
+    setTimeout(() => {
+      $songView.classList.remove('song-view-exit');
+      renderSongUI(song);
+      void $songView.offsetWidth;
+      $songView.classList.add('song-view-enter');
+    }, 160);
+  }
+}
 
+// Render song UI (shared between first-open and cross-fade)
+function renderSongUI(song) {
   // Update sidebar active state
   $songList.querySelectorAll('.si').forEach(el => el.classList.toggle('active', String(el.dataset.id) === String(currentId)));
 
@@ -1080,8 +1099,9 @@ function renderPlaylistSongs(pl) {
     const song = getById(songId);
     const title = song ? song.title : '(Canción eliminada)';
     const key = song ? song.key || 'C' : '';
+    const delay = Math.min(idx * 20, 200);
     return `
-      <div class="playlist-song-row" data-id="${songId}">
+      <div class="playlist-song-row" data-id="${songId}" style="animation-delay:${delay}ms">
         <span class="pl-song-title">${escapeHtml(title)}</span>
         <span class="pl-song-key">${key}</span>
         <div class="pl-song-actions">
@@ -1654,14 +1674,19 @@ function showRegisterForm() {
 }
 
 function showLogin() {
-  $loginOverlay.classList.remove('hidden');
+  $loginOverlay.classList.remove('hidden', 'closing');
   showLoginForm();
 }
 
 function hideLogin() {
-  $loginOverlay.classList.add('hidden');
-  $loginForm.removeEventListener('submit', handleLogin);
-  $registerForm.removeEventListener('submit', handleRegister);
+  // Animate close then hide
+  $loginOverlay.classList.add('closing');
+  setTimeout(() => {
+    $loginOverlay.classList.add('hidden');
+    $loginOverlay.classList.remove('closing');
+    $loginForm.removeEventListener('submit', handleLogin);
+    $registerForm.removeEventListener('submit', handleRegister);
+  }, 200);
 }
 
 // Toggle between login and register
