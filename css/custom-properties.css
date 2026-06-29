@@ -1,33 +1,88 @@
 :root {
+  /* ── Surface hierarchy ── */
   --bg: #0e0e10;
   --surface: #161618;
   --panel: #1c1c1f;
+  --elevated: #242428;
+
+  /* ── Borders ── */
   --border: rgba(255,255,255,0.06);
   --border2: rgba(255,255,255,0.1);
+  --border3: rgba(255,255,255,0.15);
+
+  /* ── Accents ── */
   --accent: #c8f65a;
   --accent-soft: rgba(200,246,90,.07);
+  --accent-glow: rgba(200,246,90,.15);
+  --purple: #8b7cf6;
+  --purple-soft: rgba(139,124,246,.08);
+
+  /* ── Text ── */
   --text: #eeede8;
+  --text-secondary: #b0afaa;
   --muted: #6a6a72;
   --muted2: #888892;
+
+  /* ── Song colors ── */
   --chord: #7ad4bb;
   --chord-soft: rgba(122,212,187,.08);
+  --song-bg: #18181c;
+  --song-text: #e8e7e2;
+  --song-chord: #7ad4bb;
+  --song-muted: #7a7a84;
+  --song-border: rgba(255,255,255,.05);
+
+  /* ── Semantic ── */
   --sec-color: #c8a96e;
   --danger: #e85050;
   --danger-soft: rgba(232,80,80,.08);
   --warning: #f0c040;
   --warning-soft: rgba(240,192,64,.1);
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.25);
-  --shadow-md: 0 4px 10px rgba(0,0,0,.35);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,.45);
-  --shadow-xl: 0 12px 36px rgba(0,0,0,.55);
+  --success: #7ad4bb;
+  --success-soft: rgba(122,212,187,.08);
+
+  /* ── Section tab colors (OneNote-style) ── */
+  --section-red: #e85050;
+  --section-red-soft: rgba(232,80,80,.12);
+  --section-orange: #e89050;
+  --section-orange-soft: rgba(232,144,80,.12);
+  --section-yellow: #e0c040;
+  --section-yellow-soft: rgba(224,192,64,.12);
+  --section-green: #60b86a;
+  --section-green-soft: rgba(96,184,106,.12);
+  --section-teal: #50b8a0;
+  --section-teal-soft: rgba(80,184,160,.12);
+  --section-blue: #5090d8;
+  --section-blue-soft: rgba(80,144,216,.12);
+  --section-purple: #8b7cf6;
+  --section-purple-soft: rgba(139,124,246,.12);
+  --section-pink: #d470a0;
+  --section-pink-soft: rgba(212,112,160,.12);
+
+  /* ── Glass effect ── */
   --glass-bg: rgba(22,22,24,.78);
+  --glass-bg-strong: rgba(22,22,24,.92);
   --glass-border: rgba(255,255,255,.06);
   --glass-blur: 16px;
-  --noise-opacity: .01;
+
+  /* ── Shadows (multi-layer depth) ── */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.2);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.25), 0 1px 2px rgba(0,0,0,.15);
+  --shadow-md: 0 4px 10px rgba(0,0,0,.3), 0 2px 4px rgba(0,0,0,.2);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.35), 0 4px 8px rgba(0,0,0,.25);
+  --shadow-xl: 0 12px 36px rgba(0,0,0,.4), 0 6px 12px rgba(0,0,0,.3);
+  --shadow-drawer: 4px 0 32px rgba(0,0,0,.5), 2px 0 8px rgba(0,0,0,.3);
+
+  /* ── Typography ── */
+  --ff-head: 'Inter', system-ui, sans-serif;
+  --ff-body: 'Inter', system-ui, sans-serif;
+  --ff-mono: 'JetBrains Mono', monospace;
+
   --letter-spacing-display: -.04em;
   --letter-spacing-heading: -.02em;
   --letter-spacing-body: .005em;
   --letter-spacing-caption: .08em;
+
   --font-size-xs: .62rem;
   --font-size-sm: .72rem;
   --font-size-base: .84rem;
@@ -35,47 +90,89 @@
   --font-size-lg: 1.2rem;
   --font-size-xl: 1.4rem;
   --font-size-2xl: 1.8rem;
+  --font-size-3xl: 2.2rem;
+
+  /* ── Spacing scale (4px base) ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ── Bar heights ── */
+  --bar-height: 56px;
+  --bar-height-mobile: 52px;
+
+  /* ── Drawer ── */
+  --drawer-width: 340px;
+
+  /* ── Border radius ── */
+  --rs: 8px;
+  --rs-sm: 6px;
+  --rs-lg: 12px;
+  --rs-xl: 16px;
+  --rs-full: 9999px;
+
+  /* ── Scrollbar ── */
   --scrollbar-width: 4px;
   --scrollbar-thumb: rgba(255,255,255,.08);
   --scrollbar-thumb-hover: rgba(255,255,255,.15);
-  --rs: 8px;
-  --rs-sm: 6px;
-  --ff-head: 'Inter', system-ui, sans-serif;
-  --ff-body: 'Inter', system-ui, sans-serif;
-  --ff-mono: 'JetBrains Mono', monospace;
+
+  /* ── Noise texture ── */
+  --noise-opacity: .01;
+
+  /* ── Transitions ── */
   --ease-out: cubic-bezier(0.4,0,0.2,1);
   --ease-spring: cubic-bezier(.34,1.56,.64,1);
   --transition-fast: .15s var(--ease-out);
   --transition-base: .2s var(--ease-out);
   --transition-slow: .3s var(--ease-out);
-  /* Song-body (lyrics area) — dark theme */
-  --song-bg: #18181c;
-  --song-text: #e8e7e2;
-  --song-chord: #7ad4bb;
-  --song-muted: #7a7a84;
-  --song-border: rgba(255,255,255,.05);
+  --transition-drawer: .35s var(--ease-out);
 }
 
+/* ── Light theme ── */
 [data-theme="light"] {
   --bg: #f5f4f0;
   --surface: #ffffff;
   --panel: #eeede8;
+  --elevated: #e8e7e2;
   --border: rgba(0,0,0,0.07);
   --border2: rgba(0,0,0,0.12);
+  --border3: rgba(0,0,0,0.18);
   --accent: #4a8a1a;
   --accent-soft: rgba(74,138,26,.07);
+  --accent-glow: rgba(74,138,26,.12);
+  --purple: #6b5ce0;
+  --purple-soft: rgba(107,92,224,.08);
   --text: #18181c;
+  --text-secondary: #4a4a52;
   --muted: #888894;
   --muted2: #6a6a76;
   --chord: #16705a;
   --chord-soft: rgba(22,112,90,.08);
   --sec-color: #8a5a10;
+  --danger: #c83030;
+  --danger-soft: rgba(200,48,48,.08);
+  --warning: #b89010;
+  --warning-soft: rgba(184,144,16,.1);
+  --success: #16705a;
+  --success-soft: rgba(22,112,90,.08);
   --glass-bg: rgba(255,255,255,.78);
+  --glass-bg-strong: rgba(255,255,255,.92);
   --glass-border: rgba(0,0,0,.07);
-  /* Song-body (lyrics area) — light theme */
   --song-bg: #ffffff;
   --song-text: #18181c;
   --song-chord: #00633d;
   --song-muted: #888894;
   --song-border: rgba(0,0,0,.07);
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.06);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+  --shadow-md: 0 4px 10px rgba(0,0,0,.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.1);
+  --shadow-xl: 0 12px 36px rgba(0,0,0,.12);
+  --shadow-drawer: 4px 0 24px rgba(0,0,0,.15);
 }

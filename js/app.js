@@ -45,7 +45,7 @@ let selectedPlaylistId = null;
 
 // ── DOM references ──
 const $songList = document.getElementById('songList');
-const $alphaTabs = document.getElementById('alphaTabs');
+const $alphaTabsEl = document.getElementById('alphaTabs');
 const $colHead = document.getElementById('colHead');
 const $colCount = document.getElementById('colCount');
 const $searchInput = document.getElementById('searchInput');
@@ -60,6 +60,7 @@ const $currentKey = document.getElementById('currentKey');
 const $sidebar = document.getElementById('sidebar');
 const $mobBtn = document.getElementById('mobBtn');
 const $mobOvl = document.getElementById('mobOvl');
+const $bottomSongTitle = document.getElementById('bottomSongTitle');
 const $favoritesFilter = document.getElementById('favoritesFilter');
 const $btnSetlist = document.getElementById('btnSetlist');
 
@@ -186,31 +187,51 @@ function escapeHtml(str) {
   return d.innerHTML;
 }
 
-// ── Render Alpha Tabs ──
+// ── Section color palette (OneNote-style) ──
+const SECTION_COLORS = [
+  '--section-red', '--section-orange', '--section-yellow', '--section-green',
+  '--section-teal', '--section-blue', '--section-purple', '--section-pink'
+];
+
+function getSectionColor(index) {
+  const prop = SECTION_COLORS[index % SECTION_COLORS.length];
+  return getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+}
+
+// ── Render Alpha Tabs & Section Pills ──
 function renderAlphaTabs() {
   const songs = getAll();
   const alphas = [...new Set(songs.map(s => s.title.charAt(0).toUpperCase()).filter(Boolean))].sort();
   const sections = getSections();
 
+  // ── A-Z tabs + Section tabs, both in alpha-col ──
   let html = '';
-  // A-Z buttons
-  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(l => {
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach((l, i) => {
     const has = alphas.includes(l);
-    html += `<button class="ab${has ? ' has' : ''}${activeAlpha === l ? ' active' : ''}" data-l="${l}">${l}</button>`;
+    const isActive = activeAlpha === l;
+    const colorVar = SECTION_COLORS[i % SECTION_COLORS.length];
+    const letterBg = has && !isActive ? getComputedStyle(document.documentElement).getPropertyValue(colorVar).trim() : '';
+    const styleAttr = letterBg ? ` style="background:${letterBg}"` : '';
+    html += `<button class="ab${has ? ' has' : ''}${isActive ? ' active' : ''}" data-l="${l}"${styleAttr}>${l}</button>`;
   });
 
-  if (sections.length) html += '<div class="alpha-sep"></div>';
+  // Sections in same column (below A-Z, with separator)
+  if (sections.length) {
+    html += '<div class="alpha-sep"></div>';
+    sections.forEach((s, i) => {
+      const isActive = activeSection === s;
+      const colorVar = SECTION_COLORS[i % SECTION_COLORS.length];
+      const secBg = getComputedStyle(document.documentElement).getPropertyValue(colorVar).trim();
+      const abbr = s.split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase();
+      html += `<button class="ab-sec${isActive ? ' active' : ''}" data-section="${escapeHtml(s)}" title="${escapeHtml(s)}" style="background:${secBg}">${abbr}</button>`;
+    });
+  }
 
-  // Section buttons (abbreviated)
-  sections.forEach(s => {
-    const abbr = s.split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase();
-    html += `<button class="ab-sec${activeSection === s ? ' active' : ''}" data-section="${escapeHtml(s)}" title="${escapeHtml(s)}">${abbr}</button>`;
-  });
+  if (!$alphaTabsEl) return;
+  $alphaTabsEl.innerHTML = html;
 
-  $alphaTabs.innerHTML = html;
-
-  // Wire alpha buttons
-  $alphaTabs.querySelectorAll('.ab').forEach(btn => {
+  // Wire A-Z buttons
+  $alphaTabsEl.querySelectorAll('.ab').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.dataset.l) {
         activeAlpha = activeAlpha === btn.dataset.l ? 'ALL' : btn.dataset.l;
@@ -221,7 +242,8 @@ function renderAlphaTabs() {
     });
   });
 
-  $alphaTabs.querySelectorAll('.ab-sec').forEach(btn => {
+  // Wire section buttons
+  $alphaTabsEl.querySelectorAll('.ab-sec').forEach(btn => {
     btn.addEventListener('click', () => {
       const s = btn.dataset.section;
       activeSection = activeSection === s ? null : s;
@@ -234,6 +256,9 @@ function renderAlphaTabs() {
 
 // ── Render Song List (catalog or setlist) ──
 function renderSongList() {
+  // Clear song title when returning to catalog
+  if ($bottomSongTitle) $bottomSongTitle.classList.remove('show');
+
   // Quick fade hint when filters change
   $songList.style.opacity = '.5';
 
@@ -499,8 +524,12 @@ function openSong(id) {
   // Update sidebar active state
   $songList.querySelectorAll('.si').forEach(el => el.classList.toggle('active', String(el.dataset.id) === String(currentId)));
 
-  // Render header
+  // Render header & bottom bar
   $songTitle.textContent = song.title;
+  if ($bottomSongTitle) {
+    $bottomSongTitle.textContent = song.title;
+    $bottomSongTitle.classList.add('show');
+  }
   const rawKey = song.key || 'C';
   $songMeta.textContent = (song.author ? escapeHtml(song.author) + ' · ' : '') + 'Tono: ' + displayChordKey(rawKey) + (song.tempo ? ' · ♩ ' + song.tempo + ' bpm' : '');
 
